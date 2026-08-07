@@ -1,11 +1,23 @@
-const API_BASE =
-  process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+const API_BASE = import.meta.env.VITE_API_URL || 'https://server-9epcbbn5d-azm0d3u8s-projects.vercel.app/api';
 
 const getAuthHeaders = () => ({
   Authorization: `Bearer ${localStorage.getItem("token")}`,
 });
 
 const api = {
+  uploadFile: async (file) => {
+    if (!file) {
+      throw new Error("No file provided");
+    }
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsDataURL(file);
+    });
+  },
   
   uploadCertificate: async (formData) => {
     const response = await fetch(`${API_BASE}/experts/upload-certificate`, {

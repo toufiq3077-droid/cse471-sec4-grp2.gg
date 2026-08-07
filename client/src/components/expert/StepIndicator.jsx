@@ -1,3 +1,5 @@
+import { CheckCircle } from "lucide-react";
+
 function StepIndicator({ steps, current }) {
   return (
     <div className="flex items-center justify-center mb-10">

@@ -14,7 +14,7 @@ import {
   Loader,
 } from "lucide-react";
 
-import StepIndicator from "../../components/expert/2/StepIndicator";
+import StepIndicator from "../../components/expert/StepIndicator";
 import FileUploadZone from "../../components/expert/FileUploadZone";
 import AvailabilityBuilder from "../../components/expert/AvailabilityBuilder";
 import { api } from "../../services/expertRegistrationApi";
