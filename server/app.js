@@ -4,6 +4,8 @@ const cors = require('cors');
 const morgan = require('morgan');
 
 const { connectToDatabase } = require('./config/db');
+const authRoutes = require('./routes/authRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const expertRoutes = require('./routes/expertRoutes');
 const consultationRoutes = require('./routes/consultationRoutes');
@@ -28,17 +30,24 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Khet-i server is running' });
 });
 
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/experts', expertRoutes);
 app.use('/api/consultations', consultationRoutes);
 
 app.use((err, req, res, next) => {
-  console.error(err);
+  console.error('Server error:', err.message);
 
-  const statusCode = err.statusCode || 500;
-  res.status(statusCode).json({
-    message: err.message || 'Internal server error',
-  });
+  let statusCode = err.statusCode || 500;
+  let message = err.message || 'Internal server error';
+
+  if (err.name === 'MongooseServerSelectionError' || err.name === 'MongoNetworkError') {
+    statusCode = 500;
+    message = 'Database connection failed. Please ensure MongoDB is running or configure MONGO_URI in server/.env';
+  }
+
+  res.status(statusCode).json({ message });
 });
 
 module.exports = app;

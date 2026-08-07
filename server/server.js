@@ -6,15 +6,15 @@ const PORT = process.env.PORT || 5000;
 async function startServer() {
   try {
     await connectToDatabase();
-    console.log('MongoDB connected');
-
-    app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
-    });
+    console.log('✅ MongoDB connected successfully');
   } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
+    console.warn('⚠️  MongoDB connection warning:', error.message);
+    console.warn('⚠️  Please ensure MongoDB is running locally on port 27017 or set MONGO_URI in server/.env');
   }
+
+  app.listen(PORT, () => {
+    console.log(`🚀 Khet-i backend server running on http://localhost:${PORT}`);
+  });
 }
 
 startServer();

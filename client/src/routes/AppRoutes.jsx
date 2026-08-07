@@ -1,19 +1,117 @@
+import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import ExpertBookingPage from '../pages/expert/ExpertBookingPage';
 import ExpertRegistrationPage from '../pages/expert/ExpertRegistrationPage';
 import DiseaseDiagnosis from '../features/ai/pages/DiseaseDiagnosis';
 import DiagnosisHistory from '../features/ai/pages/DiagnosisHistory';
-import HomePage from '../pages/HomePage';
+import LoginPage from '../pages/auth/LoginPage';
+import RegisterPage from '../pages/auth/RegisterPage';
+import ProfilePage from '../pages/auth/ProfilePage';
+import AdminLoginPage from '../pages/auth/AdminLoginPage';
+import AdminDashboard from '../pages/admin/AdminDashboard';
+import UserDashboard from '../pages/dashboard/UserDashboard';
+import ProtectedRoute from '../components/common/ProtectedRoute';
+
+function RootRedirect() {
+  const { user, isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-slate-500 text-sm font-medium">Loading application...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin" replace />;
+  }
+
+  return <Navigate to="/dashboard" replace />;
+}
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/experts" element={<ExpertBookingPage />} />
-      <Route path="/experts/register" element={<ExpertRegistrationPage />} />
-      <Route path="/ai/diagnosis" element={<DiseaseDiagnosis />} />
-      <Route path="/ai/history" element={<DiagnosisHistory />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* Root Route: Redirects based on Auth Status & Role */}
+      <Route path="/" element={<RootRedirect />} />
+
+      {/* Auth Routes */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/admin-login" element={<AdminLoginPage />} />
+
+      {/* Admin Dashboard */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* User Dashboard */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <UserDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* User Profile */}
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Ecosystem Modules */}
+      <Route
+        path="/experts"
+        element={
+          <ProtectedRoute>
+            <ExpertBookingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/experts/register"
+        element={
+          <ProtectedRoute>
+            <ExpertRegistrationPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ai/diagnosis"
+        element={
+          <ProtectedRoute>
+            <DiseaseDiagnosis />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ai/history"
+        element={
+          <ProtectedRoute>
+            <DiagnosisHistory />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Catch-all redirect */}
+      <Route path="*" element={<RootRedirect />} />
     </Routes>
   );
 }
