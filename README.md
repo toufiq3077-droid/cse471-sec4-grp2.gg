@@ -1,228 +1,139 @@
-# 🌾 Khet-i
+# Khet-i — Module 1 · Member 1
 
-**Khet-i** is a MERN Stack smart agriculture platform that connects farmers, buyers, agricultural experts, delivery riders, and administrators into a single digital ecosystem. The platform simplifies agricultural commerce through an online marketplace, AI-powered crop disease diagnostics, live delivery tracking, and expert consultation services.
+**Feature:** Farmers can create, update, and manage crop listings with stock quantity, seasonal
+information, pricing, and multiple product images uploaded through Cloudinary. Buyers can browse
+the marketplace, manage a shopping cart, place orders, and complete checkout using Cash on Delivery
+or Digital Payment, with invoice generation.
 
----
+Both farmers and buyers use a single, unified login/registration system (role-based).
 
-## Project Overview
+## Stack
+- **Backend:** Node.js, Express, MongoDB (Mongoose), JWT auth, Cloudinary + Multer for images
+- **Frontend:** React (Vite), React Router, Tailwind CSS, Axios
 
-Khet-i aims to improve agricultural productivity and accessibility by providing:
-
-* A digital marketplace for buying and selling crops.
-* AI-powered crop disease detection and treatment recommendations.
-* Real-time delivery tracking for agricultural products.
-* A paid consultation platform connecting farmers with verified agricultural experts.
-* Administrative tools for managing users, experts, and platform activities.
-
----
-
-## Tech Stack
-
-### Frontend
-
-* React
-* Vite
-* React Router
-* Tailwind CSS
-* Axios
-
-### Backend
-
-* Node.js
-* Express.js
-* MongoDB
-* Mongoose
-* JWT Authentication
-
-### APIs & Services
-
-* Cloudinary
-* Google Gemini API
-* OpenStreetMap
-* Leaflet.js
-* Socket.io
-* Payment Gateway (Sandbox)
-
----
-
-## User Roles
-
-### 🌱 Farmer
-
-* List agricultural products for sale.
-* Diagnose crop diseases using AI.
-* Book consultations with agricultural experts.
-* Track deliveries.
-
-### 🛒 Buyer
-
-* Browse marketplace listings.
-* Purchase crops directly from farmers.
-* Track orders in real time.
-
-### 👨‍🌾 Agriculture Expert
-
-* Create a verified professional profile.
-* Manage consultation schedules.
-* Provide paid agricultural consultations.
-
-### 🚚 Delivery Rider
-
-* Accept delivery requests.
-* Navigate optimized routes.
-* Update delivery status in real time.
-
-### 🛡️ Admin
-
-* Manage platform users.
-* Verify expert credentials.
-* Monitor platform activity and revenue.
-
----
-
-# Features
-
-## Member 1 – Smart Marketplace & Data Analysis
-
-* B2B/B2C Crop Marketplace
-* Dynamic Market Price Charts
-* Demand & Yield Prediction
-* Secure Checkout System
-
----
-
-## Member 2 – Smart Logistics
-
-* Driver Assignment System
-* Live Delivery Tracking
-* Route & ETA Calculation
-* Geo-Fencing Notifications
-
----
-
-## Member 3 – Agriculture Expert Network
-
-* Expert Verification
-* Appointment Booking
-* Live Consultation Chat
-* Digital Billing & Payment
-
----
-
-## Member 4 – AI Crop Intelligence
-
-* AI Leaf Disease Diagnosis
-* Treatment Recommendation Generator
-* Weather Dashboard
-* Weather Risk Notifications
-
----
-
-# Database Collections
-
-* Users
-* Products
-* Orders
-* Deliveries
-* Appointments
-* Chats
-* DiseaseLogs
-
----
-
-# Project Structure
-
-```text
-client/
-server/
-docs/
-README.md
+## Folder structure
+```
+khet-i/
+  backend/
+    config/        # db.js, cloudinary.js
+    models/        # User.js (farmer+buyer, role field), Crop.js, Order.js
+    middleware/     # auth.js (protect/optionalAuth/authorize), upload.js, errorMiddleware.js
+    controllers/    # authController.js, cropController.js, orderController.js
+    routes/         # authRoutes.js, cropRoutes.js, orderRoutes.js
+    scripts/        # seedDemo.js
+    server.js
+  frontend/
+    src/
+      api/axios.js
+      context/AuthContext.jsx, CartContext.jsx
+      components/  # Navbar, CropCard, ProductCard, ImageUploader, ProtectedRoute
+      pages/       # Home, Login, Register, Dashboard, CropForm, Cart, Checkout, OrderInvoice, Orders
+      App.jsx
 ```
 
----
-
-# Installation
-
-Clone the repository:
+## 1. Backend setup
 
 ```bash
-git clone <repository-url>
-cd Khet-i
-```
-
-Install frontend dependencies:
-
-```bash
-cd client
+cd backend
 npm install
+cp .env.example .env
 ```
 
-Install backend dependencies:
+Fill in `.env`:
+- `MONGO_URI` — local MongoDB or MongoDB Atlas connection string
+- `JWT_SECRET` — any long random string
+- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` — from your free [Cloudinary](https://cloudinary.com) dashboard
 
-```bash
-cd ../server
-npm install
-```
-
-Create a `.env` file inside the `server` directory and configure the required environment variables.
-
-Example:
-
-```env
-PORT=5000
-MONGO_URI=
-JWT_SECRET=
-GEMINI_API_KEY=
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
-```
-
-Start the backend:
-
+Run it:
 ```bash
 npm run dev
 ```
+Server starts at `http://localhost:5000`. If `MONGO_URI` isn't reachable in development, it
+automatically falls back to an in-memory MongoDB instance so you can still run the app (data resets
+on restart). This requires downloading a mongod binary the first time, so it needs a normal internet
+connection.
 
-Start the frontend:
+Optional: seed demo accounts + crops
+```bash
+npm run seed
+```
+This creates:
+- Farmer login → `demo.farmer@kheti.local` / `password123`
+- Buyer login  → `demo.buyer@kheti.local` / `password123`
+
+## 2. Frontend setup
 
 ```bash
-cd ../client
+cd frontend
+npm install
+cp .env.example .env
 npm run dev
 ```
+App runs at `http://localhost:5173`.
 
----
+## 3. Quick manual test (curl)
 
-# Development Workflow
+```bash
+# Register a buyer
+curl -X POST http://localhost:5000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test Buyer","email":"buyer@test.com","password":"password123","phone":"01700000000","role":"buyer"}'
 
-Each team member develops on a dedicated Git branch.
+# Register a farmer
+curl -X POST http://localhost:5000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test Farmer","email":"farmer@test.com","password":"password123","phone":"01711111111","role":"farmer","farmName":"Green Acres"}'
 
-Example branch names:
+# Login (either role)
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"farmer@test.com","password":"password123"}'
+# -> copy the returned "token" and use it as: -H "Authorization: Bearer <token>"
+```
 
-* `feature/member1-marketplace`
-* `feature/member2-logistics`
-* `feature/member3-consultation`
-* `feature/member4-ai`
+## API Reference
 
-Merge feature branches only after testing and review.
+### Auth (unified — role: "farmer" | "buyer")
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| POST | `/api/auth/register` | Public | Register as a farmer or buyer (`role` field required) |
+| POST | `/api/auth/login` | Public | Login (works for either role), returns JWT |
+| GET | `/api/auth/profile` | Private | Get logged-in user's profile |
+| PUT | `/api/auth/profile` | Private | Update profile fields |
+| PUT | `/api/auth/profile/image` | Private | Upload/replace profile photo |
 
----
+### Crop Listings (farmer-only for mutations)
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | `/api/crops` | Public | Browse all **active** listings (search/filter/pagination) — used by the marketplace |
+| GET | `/api/crops/mine` | Private (farmer) | Get the logged-in farmer's own listings |
+| GET | `/api/crops/:id` | Public | Get one listing |
+| POST | `/api/crops` | Private (farmer) | Create listing (multipart form, field `images`, up to 6) |
+| PUT | `/api/crops/:id` | Private (farmer, owner) | Update fields and/or add more images |
+| DELETE | `/api/crops/:id/images/:publicId` | Private (farmer, owner) | Remove a single image |
+| DELETE | `/api/crops/:id` | Private (farmer, owner) | Delete listing + all its Cloudinary images |
 
-# Project Status
+Query params supported on list endpoints: `status`, `season`, `category`, `search`, `page`, `limit`.
 
-🚧 Under Development
+### Orders / Checkout
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| POST | `/api/orders` | Public / optional login | Place an order (COD or Digital Payment). If a buyer is logged in, the order is linked to their account automatically; guests can still check out. |
+| GET | `/api/orders/:id` | Public | Fetch an order for the invoice page |
+| GET | `/api/orders/mine` | Private (buyer) | Buyer's own order history |
 
----
+### Crop fields
+- `name`, `category` (enum), `description`
+- `stockQuantity`, `unit` (kg/gram/ton/quintal/piece/dozen/bundle)
+- `season` (Summer/Winter/Rainy/Autumn/Spring/All Season), `harvestDate`, `availableFrom`, `availableUntil`
+- `pricePerUnit`, `discountPercent`
+- `images: [{url, publicId}]` — max 6, stored on Cloudinary
+- `status` — auto-set to `Out of Stock` when `stockQuantity` hits 0, editable to `Active`/`Inactive`
 
-# Team
+## What's intentionally left out (for later integration)
+- Order/delivery rider flow (Module 1 — Member 2)
+- Expert consultation booking (Module 1 — Member 3)
+- Disease diagnosis AI (Module 1 — Member 4)
 
-* **Member 1:** Smart Marketplace & Data Analysis
-* **Member 2:** Live Logistics & Tracking
-* **Member 3:** Expert Consultation Network
-* **Member 4:** AI Crop Intelligence
-
----
-
-## License
-
-This project was developed for academic purposes as part of the **CSE471 Software Engineering** course.
+The `Crop` model already exposes a public `GET /api/crops`, and `User` model's `role` field is
+generic, so teammates can register their own modules against the same accounts.
