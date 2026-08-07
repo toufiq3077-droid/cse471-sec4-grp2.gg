@@ -4,6 +4,7 @@ const {
   diagnoseLeafDiseaseController,
   getDiagnosisHistoryController,
 } = require('../controllers/ai/aiController');
+const { authenticateToken } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -42,7 +43,7 @@ function handleUpload(req, res, next) {
   });
 }
 
-router.post('/diagnose', handleUpload, diagnoseLeafDiseaseController);
-router.get('/history', getDiagnosisHistoryController);
+router.post('/diagnose', authenticateToken, handleUpload, diagnoseLeafDiseaseController);
+router.get('/history', authenticateToken, getDiagnosisHistoryController);
 
 module.exports = router;

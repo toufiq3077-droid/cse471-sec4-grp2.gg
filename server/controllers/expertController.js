@@ -5,7 +5,7 @@ const Consultation = require("../models/Consultation");
 exports.registerExpert = async (req, res) => {
   try {
     const existing = await Expert.findOne({
-      userId: req.user?.id,
+      userId: req.user?.id || req.user?._id,
     });
 
     if (existing) {
@@ -17,7 +17,7 @@ exports.registerExpert = async (req, res) => {
 
     const expert = await Expert.create({
       ...req.body,
-      userId: req.user?.id || null,
+      userId: req.user?.id || req.user?._id || null,
       status: "pending",
     });
 

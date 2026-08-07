@@ -44,7 +44,7 @@ function formatDiagnosisResponse(log) {
 
 async function diagnoseLeafDiseaseController(req, res, next) {
   try {
-    const farmerId = req.user && req.user._id;
+    const farmerId = req.user && (req.user._id || req.user.id);
 
     if (!farmerId) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -73,7 +73,7 @@ async function diagnoseLeafDiseaseController(req, res, next) {
 
 async function getDiagnosisHistoryController(req, res, next) {
   try {
-    const farmerId = req.user && req.user._id;
+    const farmerId = req.user && (req.user._id || req.user.id);
 
     if (!farmerId) {
       return res.status(401).json({ message: 'Unauthorized' });

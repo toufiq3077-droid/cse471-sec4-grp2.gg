@@ -42,7 +42,7 @@ exports.bookConsultation = async (req, res) => {
     }
 
     const consultation = await Consultation.create({
-      farmerId: req.user.id,
+      farmerId: req.user?.id || req.user?._id,
       expertId,
       consultationDate,
       timeSlot,
@@ -77,7 +77,7 @@ exports.getMyConsultations = async (req, res) => {
   try {
 
     const consultations = await Consultation.find({
-      farmerId: req.user.id,
+      farmerId: req.user?.id || req.user?._id,
     })
       .populate("expertId")
       .sort({
@@ -105,7 +105,7 @@ exports.getExpertConsultations = async (req, res) => {
   try {
 
     const expert = await Expert.findOne({
-      userId: req.user.id,
+      userId: req.user?.id || req.user?._id,
     });
 
     if (!expert) {
@@ -149,6 +149,16 @@ exports.cancelConsultation = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Consultation not found.",
+      });
+    }
+
+    const currentUserId = String(req.user?.id || req.user?._id || '');
+    const ownerId = String(consultation.farmerId || '');
+
+    if (currentUserId && ownerId && currentUserId !== ownerId && String(req.user?.role || '').toLowerCase() !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: "You are not allowed to cancel this consultation.",
       });
     }
 
@@ -208,6 +218,20 @@ exports.updateConsultationStatus = async (req, res) => {
         success: false,
         message: "Consultation not found.",
       });
+    }
+
+    const userRole = String(req.user?.role || '').toLowerCase();
+    if (userRole !== 'admin') {
+      const expert = await Expert.findOne({
+        userId: req.user?.id || req.user?._id,
+      });
+
+      if (!expert || String(expert._id) !== String(consultation.expertId)) {
+        return res.status(403).json({
+          success: false,
+          message: "You are not allowed to update this consultation.",
+        });
+      }
     }
 
     res.json({
