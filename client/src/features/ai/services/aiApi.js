@@ -1,8 +1,7 @@
 import axios from 'axios';
 
 const aiApi = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://server-9epcbbn5d-azm0d3u8s-projects.vercel.app/api',
-  withCredentials: true,
+  baseURL: import.meta.env.VITE_API_URL || 'https://server-nu-one-37.vercel.app',
 });
 
 function getAuthHeaders() {
