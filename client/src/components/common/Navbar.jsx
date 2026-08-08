@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Sprout, User, LogOut, LogIn, UserPlus, Menu, X, ShieldAlert, Stethoscope, Truck, ShoppingBag, LayoutDashboard } from 'lucide-react';
+import { Sprout, User, LogOut, LogIn, UserPlus, Menu, X, ShieldAlert, Stethoscope, Truck, ShoppingBag, LayoutDashboard, Store, ShoppingCart } from 'lucide-react';
+import { useCart } from '../../context/CartContext';
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
+  const { itemCount } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -82,6 +84,25 @@ export default function Navbar() {
                   Diagnosis History
                 </Link>
                 <Link
+                  to="/marketplace"
+                  className={`text-sm font-medium transition flex items-center gap-1.5 ${
+                    location.pathname.startsWith('/marketplace') ? 'text-emerald-600 font-semibold' : 'text-gray-600 hover:text-emerald-600'
+                  }`}
+                >
+                  <Store className="w-4 h-4" />
+                  Marketplace
+                </Link>
+                {user?.role === 'farmer' && (
+                  <Link
+                    to="/my-listings"
+                    className={`text-sm font-medium transition ${
+                      isActive('/my-listings') ? 'text-emerald-600 font-semibold' : 'text-gray-600 hover:text-emerald-600'
+                    }`}
+                  >
+                    My Listings
+                  </Link>
+                )}
+                <Link
                   to="/experts"
                   className={`text-sm font-medium transition ${
                     isActive('/experts') ? 'text-emerald-600 font-semibold' : 'text-gray-600 hover:text-emerald-600'
@@ -97,6 +118,21 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
+                {user?.role === 'buyer' && (
+                  <Link
+                    to="/cart"
+                    className="relative flex items-center gap-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-xl transition text-sm font-medium text-emerald-900"
+                    title="Cart"
+                  >
+                    <ShoppingCart className="w-4 h-4 text-emerald-700" />
+                    <span>Cart</span>
+                    {itemCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-rose-600 text-white text-[10px] font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center">
+                        {itemCount}
+                      </span>
+                    )}
+                  </Link>
+                )}
                 <Link
                   to="/profile"
                   className="flex items-center gap-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-xl transition text-sm font-medium text-emerald-900"
@@ -175,6 +211,36 @@ export default function Navbar() {
               >
                 Diagnosis History
               </Link>
+              <Link
+                to="/marketplace"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50"
+              >
+                Marketplace
+              </Link>
+              {user?.role === 'farmer' && (
+                <Link
+                  to="/my-listings"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50"
+                >
+                  My Listings
+                </Link>
+              )}
+              {user?.role === 'buyer' && (
+                <Link
+                  to="/cart"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center justify-between px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50"
+                >
+                  <span>Cart</span>
+                  {itemCount > 0 && (
+                    <span className="bg-rose-600 text-white text-xs font-bold min-w-[20px] h-5 px-1.5 rounded-full flex items-center justify-center">
+                      {itemCount}
+                    </span>
+                  )}
+                </Link>
+              )}
               <Link
                 to="/experts"
                 onClick={() => setIsMobileMenuOpen(false)}

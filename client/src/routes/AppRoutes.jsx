@@ -12,6 +12,15 @@ import AdminLoginPage from '../pages/auth/AdminLoginPage';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import UserDashboard from '../pages/dashboard/UserDashboard';
 import ProtectedRoute from '../components/common/ProtectedRoute';
+import MarketplacePage from '../pages/marketplace/MarketplacePage';
+import ListingDetailPage from '../pages/marketplace/ListingDetailPage';
+import MyListingsPage from '../pages/marketplace/MyListingsPage';
+import CreateListingPage from '../pages/marketplace/CreateListingPage';
+import EditListingPage from '../pages/marketplace/EditListingPage';
+import CartPage from '../pages/marketplace/CartPage';
+import CheckoutPage from '../pages/marketplace/CheckoutPage';
+import OrderInvoicePage from '../pages/marketplace/OrderInvoicePage';
+import OrderHistoryPage from '../pages/marketplace/OrderHistoryPage';
 
 function RootRedirect() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -106,6 +115,80 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <DiagnosisHistory />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Marketplace */}
+      <Route
+        path="/marketplace"
+        element={
+          <ProtectedRoute>
+            <MarketplacePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/marketplace/new"
+        element={
+          <ProtectedRoute allowedRoles={['farmer']}>
+            <CreateListingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/marketplace/:id/edit"
+        element={
+          <ProtectedRoute allowedRoles={['farmer']}>
+            <EditListingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/marketplace/:id"
+        element={
+          <ProtectedRoute>
+            <ListingDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/my-listings"
+        element={
+          <ProtectedRoute allowedRoles={['farmer']}>
+            <MyListingsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/cart"
+        element={
+          <ProtectedRoute allowedRoles={['buyer']}>
+            <CartPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/checkout"
+        element={
+          <ProtectedRoute allowedRoles={['buyer']}>
+            <CheckoutPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/orders"
+        element={
+          <ProtectedRoute allowedRoles={['buyer']}>
+            <OrderHistoryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/orders/:id"
+        element={
+          <ProtectedRoute allowedRoles={['buyer', 'farmer', 'admin']}>
+            <OrderInvoicePage />
           </ProtectedRoute>
         }
       />

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Sprout, Stethoscope, History, User, ShoppingBag, Truck, BadgeCheck, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Sprout, Stethoscope, History, User, ShoppingBag, Truck, BadgeCheck, ArrowRight, ShieldCheck, Store, Receipt, Package } from 'lucide-react';
 
 export default function UserDashboard() {
   const { user } = useAuth();
@@ -42,6 +42,49 @@ export default function UserDashboard() {
   };
 
   const roleMeta = getRoleHeader();
+
+  const marketplaceCards = [
+    {
+      title: 'Crop Marketplace',
+      desc: 'Browse fresh produce listed by farmers, view details, and order directly.',
+      href: '/marketplace',
+      icon: Store,
+      color: 'bg-sky-50 text-sky-700 border-sky-200',
+      btnBg: 'bg-sky-600 hover:bg-sky-700',
+    },
+    ...(user?.role === 'farmer'
+      ? [
+          {
+            title: 'My Crop Listings',
+            desc: 'Add, edit, or remove your crop listings and upload photos.',
+            href: '/my-listings',
+            icon: Package,
+            color: 'bg-orange-50 text-orange-700 border-orange-200',
+            btnBg: 'bg-orange-600 hover:bg-orange-700',
+          },
+        ]
+      : []),
+    ...(user?.role === 'buyer'
+      ? [
+          {
+            title: 'My Cart',
+            desc: 'Review items in your cart, adjust quantities, and proceed to checkout.',
+            href: '/cart',
+            icon: ShoppingBag,
+            color: 'bg-teal-50 text-teal-700 border-teal-200',
+            btnBg: 'bg-teal-600 hover:bg-teal-700',
+          },
+          {
+            title: 'Order History & Invoices',
+            desc: 'View your past orders, track status, and download printable invoices.',
+            href: '/orders',
+            icon: Receipt,
+            color: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+            btnBg: 'bg-indigo-600 hover:bg-indigo-700',
+          },
+        ]
+      : []),
+  ];
 
   const actionCards = [
     {
@@ -100,6 +143,40 @@ export default function UserDashboard() {
           <p className="text-white/90 text-sm sm:text-base leading-relaxed">{roleMeta.desc}</p>
         </div>
       </div>
+
+      {/* Marketplace Cards */}
+      {marketplaceCards.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-xl font-extrabold text-slate-900 mb-4">Buy & Sell Marketplace</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {marketplaceCards.map((card) => {
+              const Icon = card.icon;
+              return (
+                <div
+                  key={card.href}
+                  className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between"
+                >
+                  <div>
+                    <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center mb-4 ${card.color}`}>
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-900 mb-2">{card.title}</h3>
+                    <p className="text-slate-600 text-sm mb-6">{card.desc}</p>
+                  </div>
+
+                  <Link
+                    to={card.href}
+                    className={`inline-flex items-center justify-center gap-2 text-white font-semibold py-3 px-5 rounded-xl transition text-sm shadow-sm ${card.btnBg}`}
+                  >
+                    <span>Open Feature</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Feature Cards Grid */}
       <div className="mb-6">
