@@ -24,7 +24,6 @@ router.get("/:id/slots", getAvailableSlots);
 router.post(
   "/register",
   authenticateToken,
-  requireRole(["expert"]),
   registerExpert
 );
 

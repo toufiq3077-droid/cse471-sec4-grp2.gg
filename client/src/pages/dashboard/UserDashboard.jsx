@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Sprout, Stethoscope, History, User, ShoppingBag, Truck, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Sprout, Stethoscope, History, User, ShoppingBag, Truck, BadgeCheck, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function UserDashboard() {
   const { user } = useAuth();
@@ -67,6 +67,14 @@ export default function UserDashboard() {
       icon: History,
       color: 'bg-blue-50 text-blue-700 border-blue-200',
       btnBg: 'bg-blue-600 hover:bg-blue-700',
+    },
+    {
+      title: 'Become a Verified Expert',
+      desc: 'Register as an agriculture expert — set your fees, upload certifications, and set your weekly availability for consultations.',
+      href: '/experts/register',
+      icon: BadgeCheck,
+      color: 'bg-rose-50 text-rose-700 border-rose-200',
+      btnBg: 'bg-rose-600 hover:bg-rose-700',
     },
     {
       title: 'My Profile & Account Settings',
