@@ -1,70 +1,96 @@
 const DiseaseLog = require('../../models/DiseaseLog');
 const { GoogleGenAI } = require('@google/genai');
+const axios = require('axios');
 
-const DEFAULT_PROVIDER = 'gemini';
-const GEMINI_MODEL = 'gemini-2.5-flash';
-const HF_MODEL = process.env.HF_AI_MODEL || 'microsoft/Phi-3.5-vision-instruct';
+const DEFAULT_PROVIDER = 'huggingface';
+const GEMINI_MODEL = 'gemini-2.0-flash';
+
+// HuggingFace: use the new OpenAI-compatible Inference Providers router
+// Qwen2.5-VL is a Vision Language Model — accepts image + text in one call
+const HF_ROUTER_BASE = 'https://router.huggingface.co/v1';
+const HF_VLM_MODEL = 'Qwen/Qwen3-VL-30B-A3B-Instruct';
+
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const SUPPORTED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
+// ─── Gemini client ────────────────────────────────────────────────────────────
 function getGeminiClient() {
   const apiKey = process.env.GEMINI_API_KEY;
-
   if (!apiKey) {
     const error = new Error('GEMINI_API_KEY is not configured');
     error.statusCode = 500;
     throw error;
   }
-
   return new GoogleGenAI({ apiKey });
 }
 
 function getProviderName() {
   const provider = String(process.env.AI_PROVIDER || DEFAULT_PROVIDER).toLowerCase();
-
-  if (provider === 'gemini' || provider === 'free' || provider === 'huggingface') {
-    return provider;
-  }
-
+  if (provider === 'gemini' || provider === 'huggingface') return provider;
   return DEFAULT_PROVIDER;
 }
 
-async function callFreeVisionApi(file, prompt) {
+// ─── HuggingFace VLM call ─────────────────────────────────────────────────────
+async function callHuggingFaceVLM(file) {
   const apiKey = process.env.HF_API_KEY;
-
   if (!apiKey) {
     const error = new Error('HF_API_KEY is not configured');
     error.statusCode = 500;
     throw error;
   }
 
-  const response = await fetch(`https://api-inference.huggingface.co/models/${HF_MODEL}`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
+  const base64Image = file.buffer.toString('base64');
+  const mimeType = file.mimetype || 'image/jpeg';
+
+  const systemPrompt = [
+    'You are an expert agricultural plant disease diagnosis assistant.',
+    'Analyze the provided leaf image and identify the most likely crop disease or health issue.',
+    'Return ONLY valid JSON. Do not include markdown, code fences, explanations, or extra keys.',
+    'Use this exact JSON shape:',
+    '{"diseaseName":"","confidence":75,"description":"","symptoms":"","severity":"",',
+    '"organicTreatment":"","chemicalTreatment":"","fertilizer":"","prevention":"",',
+    '"irrigationAdvice":"","harvestSafety":""}',
+    'Confidence must be a number between 0 and 100.',
+    'Make all fields concise but useful for a farmer.',
+    'If uncertain, state the best matching disease and lower the confidence value.',
+  ].join(' ');
+
+  const response = await axios.post(
+    `${HF_ROUTER_BASE}/chat/completions`,
+    {
+      model: HF_VLM_MODEL,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image_url',
+              image_url: { url: `data:${mimeType};base64,${base64Image}` },
+            },
+            {
+              type: 'text',
+              text: 'Analyze this leaf image and diagnose the plant disease. Return ONLY the JSON.',
+            },
+          ],
+        },
+      ],
+      max_tokens: 800,
+      temperature: 0.2,
     },
-    body: JSON.stringify({
-      inputs: {
-        image: file.buffer.toString('base64'),
-        prompt,
+    {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
       },
-      options: {
-        wait_for_model: true,
-      },
-    }),
-  });
+      timeout: 120000,
+    }
+  );
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    const error = new Error(`Free vision API request failed: ${errorText}`);
-    error.statusCode = response.status || 502;
-    throw error;
-  }
-
-  return response.json();
+  return response.data?.choices?.[0]?.message?.content;
 }
 
+// ─── Image validation ─────────────────────────────────────────────────────────
 function ensureValidImage(file) {
   if (!file) {
     const error = new Error('No image file was provided');
@@ -85,87 +111,65 @@ function ensureValidImage(file) {
   }
 }
 
-function buildDiagnosisPrompt() {
+// ─── Gemini prompt ────────────────────────────────────────────────────────────
+function buildGeminiPrompt() {
   return [
     'You are an expert agricultural plant disease diagnosis assistant.',
     'Analyze the leaf image and identify the most likely crop disease or health issue.',
     'Return ONLY valid JSON. Do not include markdown, code fences, explanations, or extra keys.',
     'Use this exact JSON shape:',
-    '{',
-    '"diseaseName":"",',
-    '"confidence":"",',
-    '"description":"",',
-    '"symptoms":"",',
-    '"severity":"",',
-    '"organicTreatment":"",',
-    '"chemicalTreatment":"",',
-    '"fertilizer":"",',
-    '"prevention":"",',
-    '"irrigationAdvice":"",',
-    '"harvestSafety":""',
-    '}',
-    'Make the fields concise but useful for a farmer.',
-    'If the disease is uncertain, state the best matching disease and lower the confidence value.',
+    '{"diseaseName":"","confidence":75,"description":"","symptoms":"","severity":"",',
+    '"organicTreatment":"","chemicalTreatment":"","fertilizer":"","prevention":"",',
+    '"irrigationAdvice":"","harvestSafety":""}',
     'Confidence must be a numeric value between 0 and 100.',
+    'Make the fields concise but useful for a farmer.',
   ].join(' ');
 }
 
+// ─── JSON extraction ──────────────────────────────────────────────────────────
 function extractJsonPayload(text) {
   if (!text || typeof text !== 'string') {
-    const error = new Error('Gemini returned an empty response');
+    const error = new Error('AI returned an empty response');
     error.statusCode = 502;
     throw error;
   }
 
-  const trimmed = text.trim();
+  // Strip markdown fences if present
+  const stripped = text.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
 
   try {
-    return JSON.parse(trimmed);
-  } catch (initialError) {
-    const firstBrace = trimmed.indexOf('{');
-    const lastBrace = trimmed.lastIndexOf('}');
+    return JSON.parse(stripped);
+  } catch (_) {
+    const firstBrace = stripped.indexOf('{');
+    const lastBrace = stripped.lastIndexOf('}');
 
     if (firstBrace >= 0 && lastBrace > firstBrace) {
-      const jsonCandidate = trimmed.slice(firstBrace, lastBrace + 1);
-      return JSON.parse(jsonCandidate);
+      try {
+        return JSON.parse(stripped.slice(firstBrace, lastBrace + 1));
+      } catch (__) {}
     }
 
-    const error = new Error('Gemini returned invalid JSON');
+    const error = new Error('AI returned invalid JSON');
     error.statusCode = 502;
-    error.cause = initialError;
     throw error;
   }
 }
 
+// ─── Normalization ────────────────────────────────────────────────────────────
 function normalizeText(value) {
-  if (value === null || value === undefined) {
-    return '';
-  }
-
+  if (value === null || value === undefined) return '';
   return String(value).trim();
 }
 
 function normalizeConfidence(value) {
-  const numericConfidence = Number(value);
-
-  if (Number.isFinite(numericConfidence)) {
-    if (numericConfidence < 0) {
-      return 0;
-    }
-
-    if (numericConfidence > 100) {
-      return 100;
-    }
-
-    return numericConfidence;
-  }
-
-  return 0;
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 0;
+  return Math.min(100, Math.max(0, n));
 }
 
 function normalizeDiagnosisPayload(payload) {
   if (!payload || typeof payload !== 'object') {
-    const error = new Error('Gemini response payload is malformed');
+    const error = new Error('AI response payload is malformed');
     error.statusCode = 502;
     throw error;
   }
@@ -185,17 +189,17 @@ function normalizeDiagnosisPayload(payload) {
   };
 }
 
+// ─── Main diagnosis function ──────────────────────────────────────────────────
 async function diagnoseLeafDisease(file) {
   ensureValidImage(file);
-
-  const prompt = buildDiagnosisPrompt();
 
   let payload;
 
   try {
-
     if (getProviderName() === 'gemini') {
+      // ── Gemini path ──────────────────────────────────────────────────────
       const client = getGeminiClient();
+      const prompt = buildGeminiPrompt();
       const response = await client.models.generateContent({
         model: GEMINI_MODEL,
         contents: [
@@ -212,21 +216,23 @@ async function diagnoseLeafDisease(file) {
             ],
           },
         ],
-        config: {
-          responseMimeType: 'application/json',
-          temperature: 0.2,
-        },
+        config: { responseMimeType: 'application/json', temperature: 0.2 },
       });
-
       payload = extractJsonPayload(response.text);
+
     } else {
-      const freeResponse = await callFreeVisionApi(file, prompt);
-      const candidate = Array.isArray(freeResponse) ? freeResponse[0] : freeResponse;
-      payload = typeof candidate === 'string' ? extractJsonPayload(candidate) : candidate;
+      // ── HuggingFace path: Qwen2.5-VL (vision + text, single call) ────
+      console.log('[AI] Using HuggingFace Qwen2.5-VL vision model...');
+      const rawText = await callHuggingFaceVLM(file);
+      console.log('[AI] Raw VLM output:', rawText);
+      payload = extractJsonPayload(rawText);
     }
+
   } catch (error) {
+    console.error('--- AI DIAGNOSIS ERROR ---');
+    console.error(error.response?.data || error.message || error);
     const diagnosisError = new Error('Diagnosis request failed');
-    diagnosisError.statusCode = error.statusCode || 502;
+    diagnosisError.statusCode = error.response?.status || error.statusCode || 502;
     diagnosisError.cause = error;
     throw diagnosisError;
   }
@@ -234,8 +240,9 @@ async function diagnoseLeafDisease(file) {
   return normalizeDiagnosisPayload(payload);
 }
 
+// ─── Disease log helpers ──────────────────────────────────────────────────────
 async function createDiseaseLog({ farmerId, imageUrl, diagnosis }) {
-  const diseaseLog = await DiseaseLog.create({
+  return DiseaseLog.create({
     farmer: farmerId,
     imageUrl,
     diseaseName: diagnosis.diseaseName,
@@ -250,8 +257,6 @@ async function createDiseaseLog({ farmerId, imageUrl, diagnosis }) {
     irrigationAdvice: diagnosis.irrigationAdvice,
     harvestSafety: diagnosis.harvestSafety,
   });
-
-  return diseaseLog;
 }
 
 async function listFarmerDiseaseLogs(farmerId) {
