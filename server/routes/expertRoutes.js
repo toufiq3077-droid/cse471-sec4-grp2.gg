@@ -9,10 +9,20 @@ const {
   getAvailableSlots,
   approveExpert,
   rejectExpert,
+  getPendingExperts,
 } = require("../controllers/expertController");
 
 
 router.get("/", getExperts);
+
+
+// NOTE: must be declared before "/:id" or Express will treat "admin" as an :id value
+router.get(
+  "/admin/pending",
+  authenticateToken,
+  requireRole(["admin"]),
+  getPendingExperts
+);
 
 
 router.get("/:id", getExpertById);

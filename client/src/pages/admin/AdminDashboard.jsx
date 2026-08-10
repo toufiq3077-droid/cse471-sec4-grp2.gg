@@ -2,13 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { adminApi } from '../../services/adminApi';
 import toast from 'react-hot-toast';
-import { Users, Sprout, ShoppingBag, Stethoscope, Truck, ShieldAlert, RefreshCw, CheckCircle, XCircle, Search, ShieldCheck } from 'lucide-react';
+import { Users, Sprout, ShoppingBag, Stethoscope, Truck, ShieldAlert, RefreshCw, CheckCircle, XCircle, Search, ShieldCheck, Clock } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { token } = useAuth();
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
+  const [pendingExperts, setPendingExperts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expertsLoading, setExpertsLoading] = useState(true);
+  const [expertActionId, setExpertActionId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
 
@@ -27,9 +30,22 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchPendingExperts = async () => {
+    setExpertsLoading(true);
+    try {
+      const res = await adminApi.getPendingExperts(token);
+      setPendingExperts(res.experts || []);
+    } catch (error) {
+      toast.error(error.message || 'Failed to load pending experts');
+    } finally {
+      setExpertsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (token) {
       fetchData();
+      fetchPendingExperts();
     }
   }, [token]);
 
@@ -40,6 +56,21 @@ export default function AdminDashboard() {
       setUsers(users.map((u) => (u._id === userId ? { ...u, isVerified: res.user.isVerified } : u)));
     } catch (error) {
       toast.error(error.message || 'Failed to update user verification');
+    }
+  };
+
+  const handleExpertDecision = async (expertId, decision) => {
+    setExpertActionId(expertId);
+    try {
+      const res = decision === 'approve'
+        ? await adminApi.approveExpert(expertId, token)
+        : await adminApi.rejectExpert(expertId, token);
+      toast.success(res.message || `Expert ${decision}d`);
+      setPendingExperts((prev) => prev.filter((e) => e._id !== expertId));
+    } catch (error) {
+      toast.error(error.message || `Failed to ${decision} expert`);
+    } finally {
+      setExpertActionId(null);
     }
   };
 
@@ -122,6 +153,64 @@ export default function AdminDashboard() {
           <span className="text-2xl font-black text-slate-900">{stats?.admins || 0}</span>
           <span className="text-xs text-slate-500 font-medium">Admins</span>
         </div>
+      </div>
+
+      {/* Pending Expert Applications */}
+      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 mb-8">
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-amber-500" /> Pending Expert Applications
+            </h2>
+            <p className="text-xs text-slate-500">Approve or reject experts waiting for verification</p>
+          </div>
+          <button
+            onClick={fetchPendingExperts}
+            disabled={expertsLoading}
+            className="text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center gap-2"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${expertsLoading ? 'animate-spin' : ''}`} /> Refresh
+          </button>
+        </div>
+
+        {expertsLoading ? (
+          <p className="text-sm text-slate-500 py-6 text-center">Loading pending experts...</p>
+        ) : pendingExperts.length === 0 ? (
+          <p className="text-sm text-slate-500 py-6 text-center">No pending expert applications right now.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {pendingExperts.map((expert) => (
+              <div key={expert._id} className="border border-slate-200 rounded-2xl p-4 flex flex-col gap-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-semibold text-slate-900">{expert.name}</p>
+                    <p className="text-xs text-slate-500">{expert.specialization} · {expert.experience} yrs exp</p>
+                  </div>
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 capitalize">
+                    {expert.status}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 line-clamp-3">{expert.bio}</p>
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={() => handleExpertDecision(expert._id, 'approve')}
+                    disabled={expertActionId === expert._id}
+                    className="flex-1 text-xs font-semibold px-3 py-2 rounded-xl border border-emerald-600 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 disabled:opacity-50 flex items-center justify-center gap-1"
+                  >
+                    <CheckCircle className="w-3.5 h-3.5" /> Approve
+                  </button>
+                  <button
+                    onClick={() => handleExpertDecision(expert._id, 'reject')}
+                    disabled={expertActionId === expert._id}
+                    className="flex-1 text-xs font-semibold px-3 py-2 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 disabled:opacity-50 flex items-center justify-center gap-1"
+                  >
+                    <XCircle className="w-3.5 h-3.5" /> Reject
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* User Management Section */}

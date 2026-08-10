@@ -47,4 +47,24 @@ export const adminApi = {
       headers: { Authorization: `Bearer ${token}` },
     });
   },
+
+  getPendingExperts: async (token) => {
+    return safeFetch(`${BASE_URL}/experts/admin/pending`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+
+  approveExpert: async (expertId, token) => {
+    return safeFetch(`${BASE_URL}/experts/${expertId}/approve`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+
+  rejectExpert: async (expertId, token) => {
+    return safeFetch(`${BASE_URL}/experts/${expertId}/reject`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
 };

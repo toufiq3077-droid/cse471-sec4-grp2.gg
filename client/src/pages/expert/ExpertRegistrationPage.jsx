@@ -136,8 +136,8 @@ export default function ExpertRegistrationPage() {
         } else {
         showToast(data.message || "Submission failed");
         }
-     } catch {
-        showToast("Network error. Try again.");
+     } catch (err) {
+        showToast(err?.message ? `Network error: ${err.message}` : "Network error. Try again.");
      } finally {
         setSubmitting(false);
      }

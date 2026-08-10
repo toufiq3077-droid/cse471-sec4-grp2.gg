@@ -117,53 +117,90 @@ exports.getAvailableSlots = async (req, res) => {
       });
     }
 
-    const date = new Date(req.query.date);
+    const year = Number(req.query.year);
+    const month = Number(req.query.month); // 1-indexed (1 = January)
 
-    if (isNaN(date)) {
+    if (!year || !month || month < 1 || month > 12) {
       return res.status(400).json({
         success: false,
-        message: "Invalid date",
+        message: "year and month query params are required (month is 1-indexed)",
       });
     }
 
-    const day = date.toLocaleDateString("en-US", {
-      weekday: "long",
-    });
+    const monthStart = new Date(Date.UTC(year, month - 1, 1));
+    const monthEnd = new Date(Date.UTC(year, month, 1)); // first day of next month (exclusive)
 
-    const availability = expert.availability?.[day];
-
-    if (!availability) {
-      return res.json({
-        success: true,
-        slots: [],
-      });
-    }
-
+    // Pull every booked slot for this expert in the target month in a single query
     const booked = await Consultation.find({
       expertId: expert._id,
-      consultationDate: date,
+      consultationDate: { $gte: monthStart, $lt: monthEnd },
+      status: { $ne: "cancelled" },
     });
 
-    const bookedSlots = booked.map((b) => b.timeSlot);
+    const bookedByDate = {};
+    booked.forEach((b) => {
+      const key = b.consultationDate.toISOString().slice(0, 10);
+      if (!bookedByDate[key]) bookedByDate[key] = [];
+      bookedByDate[key].push(b.timeSlot);
+    });
 
-    const slots = [];
+    const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    const slots = {};
 
-    let hour = parseInt(availability.start.split(":")[0]);
-    const endHour = parseInt(availability.end.split(":")[0]);
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateObj = new Date(Date.UTC(year, month - 1, day));
+      const dayName = dateObj.toLocaleDateString("en-US", {
+        weekday: "long",
+        timeZone: "UTC",
+      });
 
-    while (hour < endHour) {
-      const slot = `${String(hour).padStart(2, "0")}:00`;
+      const availability = expert.availability?.[dayName];
+      if (!availability) continue;
 
-      if (!bookedSlots.includes(slot)) {
-        slots.push(slot);
+      const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const bookedSlots = bookedByDate[dateStr] || [];
+
+      let hour = parseInt(availability.start.split(":")[0]);
+      const endHour = parseInt(availability.end.split(":")[0]);
+
+      const daySlots = [];
+      while (hour < endHour) {
+        const slot = `${String(hour).padStart(2, "0")}:00`;
+        if (!bookedSlots.includes(slot)) {
+          daySlots.push(slot);
+        }
+        hour++;
       }
 
-      hour++;
+      if (daySlots.length > 0) {
+        slots[dateStr] = daySlots;
+      }
     }
 
     res.json({
       success: true,
       slots,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+
+exports.getPendingExperts = async (req, res) => {
+  try {
+    const status = ["pending", "approved", "rejected"].includes(req.query.status)
+      ? req.query.status
+      : "pending";
+
+    const experts = await Expert.find({ status }).sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      experts,
     });
   } catch (err) {
     res.status(500).json({

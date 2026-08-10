@@ -70,9 +70,9 @@ function CalendarBooking({ expert, onBack, onBooked }) {
     try {
       const result = await api.bookSlot({
         expertId: expert._id,
-        date: selectedDate,
+        consultationDate: selectedDate,
         timeSlot: selectedSlot,
-        note,
+        notes: note,
       });
       if (result.success) {
         showToast("Consultation booked successfully!");

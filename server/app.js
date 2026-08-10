@@ -17,8 +17,8 @@ const app = express();
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(morgan('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 app.use(async (req, res, next) => {
   try {
@@ -51,6 +51,11 @@ app.use((err, req, res, next) => {
   if (err.name === 'MongooseServerSelectionError' || err.name === 'MongoNetworkError') {
     statusCode = 500;
     message = 'Database connection failed. Please ensure MongoDB is running or configure MONGO_URI in server/.env';
+  }
+
+  if (err.type === 'entity.too.large') {
+    statusCode = 413;
+    message = 'Upload too large. Please use smaller files (max 25MB total per request).';
   }
 
   res.status(statusCode).json({ message });
