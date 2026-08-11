@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Sprout, Stethoscope, History, User, ShoppingBag, Truck, BadgeCheck, ArrowRight, ShieldCheck, Store, Receipt, Package, CloudSun } from 'lucide-react';
-
 export default function UserDashboard() {
   const { user } = useAuth();
 
@@ -81,6 +80,18 @@ export default function UserDashboard() {
             icon: Receipt,
             color: 'bg-indigo-50 text-indigo-700 border-indigo-200',
             btnBg: 'bg-indigo-600 hover:bg-indigo-700',
+          },
+        ]
+      : []),
+    ...(user?.role === 'rider'
+      ? [
+          {
+            title: 'My Deliveries',
+            desc: 'Accept available orders, start deliveries, and mark them as delivered.',
+            href: '/rider',
+            icon: Truck,
+            color: 'bg-amber-50 text-amber-700 border-amber-200',
+            btnBg: 'bg-amber-600 hover:bg-amber-700',
           },
         ]
       : []),

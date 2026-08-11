@@ -102,6 +102,17 @@ export default function Navbar() {
                     My Listings
                   </Link>
                 )}
+                {user?.role === 'rider' && (
+                  <Link
+                    to="/rider"
+                    className={`text-sm font-medium transition flex items-center gap-1.5 ${
+                      isActive('/rider') ? 'text-amber-600 font-semibold' : 'text-gray-600 hover:text-amber-600'
+                    }`}
+                  >
+                    <Truck className="w-4 h-4" />
+                    My Deliveries
+                  </Link>
+                )}
                 <Link
                   to="/experts"
                   className={`text-sm font-medium transition ${
@@ -234,6 +245,16 @@ export default function Navbar() {
                   className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50"
                 >
                   My Listings
+                </Link>
+              )}
+              {user?.role === 'rider' && (
+                <Link
+                  to="/rider"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-amber-600 hover:bg-amber-50"
+                >
+                  <Truck className="w-4 h-4 text-amber-600" />
+                  My Deliveries
                 </Link>
               )}
               {user?.role === 'buyer' && (

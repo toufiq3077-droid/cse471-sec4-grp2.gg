@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Printer, Package, MapPin, Phone, User as UserIcon, CheckCircle2, Clock, CreditCard } from 'lucide-react';
+import { ArrowLeft, Printer, Package, MapPin, Phone, User as UserIcon, CheckCircle2, Clock, CreditCard, Truck } from 'lucide-react';
 import { orderApi } from '../../services/orderApi';
 
 const STATUS_STYLES = {
@@ -134,6 +134,45 @@ export default function OrderInvoicePage() {
               </p>
             </div>
           </div>
+
+          {/* Delivery driver */}
+          {order.riderId && (
+            <div
+              className={`rounded-2xl p-5 border mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                order.status === 'delivered'
+                  ? 'bg-green-50 border-green-100'
+                  : 'bg-amber-50 border-amber-100'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
+                    order.status === 'delivered'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-amber-100 text-amber-700'
+                  }`}
+                >
+                  {order.status === 'delivered' ? <CheckCircle2 className="w-6 h-6" /> : <Truck className="w-6 h-6" />}
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                    {order.status === 'delivered' ? 'Delivered By' : 'Your Delivery Driver'}
+                  </h3>
+                  <p className="font-bold text-slate-900">{order.riderName || 'Rider'}</p>
+                  {order.riderPhone && (
+                    <p className="text-sm text-slate-600 flex items-center gap-1.5 mt-0.5">
+                      <Phone className="w-3.5 h-3.5" /> {order.riderPhone}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <p className="text-sm text-slate-600">
+                {order.status === 'delivered'
+                  ? 'Your order has been delivered by the rider above.'
+                  : 'A rider has accepted your order and is handling the delivery.'}
+              </p>
+            </div>
+          )}
 
           {/* Items */}
           <div className="mb-8">

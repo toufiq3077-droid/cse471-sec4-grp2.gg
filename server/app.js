@@ -12,6 +12,7 @@ const consultationRoutes = require('./routes/consultationRoutes');
 const cropRoutes = require('./routes/cropRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const riderRoutes = require('./routes/riderRoutes');
 const weatherRoutes = require('./routes/weatherRoutes');
 
 const app = express();
@@ -42,6 +43,7 @@ app.use('/api/consultations', consultationRoutes);
 app.use('/api/crops', cropRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/riders', riderRoutes);
 app.use('/api/weather', weatherRoutes);
 
 app.use((err, req, res, next) => {

@@ -12,6 +12,7 @@ import AdminLoginPage from '../pages/auth/AdminLoginPage';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import UserDashboard from '../pages/dashboard/UserDashboard';
 import ProtectedRoute from '../components/common/ProtectedRoute';
+import RiderDashboard from '../pages/rider/RiderDashboard';
 import MarketplacePage from '../pages/marketplace/MarketplacePage';
 import ListingDetailPage from '../pages/marketplace/ListingDetailPage';
 import MyListingsPage from '../pages/marketplace/MyListingsPage';
@@ -82,6 +83,16 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Rider Dashboard */}
+      <Route
+        path="/rider"
+        element={
+          <ProtectedRoute allowedRoles={['rider']}>
+            <RiderDashboard />
           </ProtectedRoute>
         }
       />
@@ -196,7 +207,7 @@ export default function AppRoutes() {
       <Route
         path="/orders/:id"
         element={
-          <ProtectedRoute allowedRoles={['buyer', 'farmer', 'admin']}>
+          <ProtectedRoute allowedRoles={['buyer', 'farmer', 'admin', 'rider']}>
             <OrderInvoicePage />
           </ProtectedRoute>
         }

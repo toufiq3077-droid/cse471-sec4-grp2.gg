@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Receipt, Loader, Package } from 'lucide-react';
+import { Receipt, Loader, Package, Truck } from 'lucide-react';
 import { orderApi } from '../../services/orderApi';
 
 const STATUS_STYLES = {
@@ -101,6 +101,15 @@ export default function OrderHistoryPage() {
                     <p className="text-xs text-slate-400 mt-0.5 truncate">
                       {order.items.map((item) => item.name).join(', ')}
                     </p>
+                    {order.riderId && (
+                      <p className="text-xs text-amber-700 font-medium mt-1 flex items-center gap-1">
+                        <Truck className="w-3.5 h-3.5 shrink-0" />
+                        {order.status === 'delivered'
+                          ? `Delivered by ${order.riderName || 'Rider'}`
+                          : `Assigned to driver: ${order.riderName || 'Rider'}`}
+                        {order.riderPhone ? ` • ${order.riderPhone}` : ''}
+                      </p>
+                    )}
                   </div>
                   <div className="text-left sm:text-right shrink-0">
                     <p className="text-lg font-extrabold text-emerald-700">৳{order.total}</p>

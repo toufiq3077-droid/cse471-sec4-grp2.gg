@@ -90,6 +90,24 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    riderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+      index: true,
+    },
+    riderName: {
+      type: String,
+      default: '',
+    },
+    riderPhone: {
+      type: String,
+      default: '',
+    },
+    deliveredAt: {
+      type: Date,
+      default: null,
+    },
     shippingAddress: {
       street: { type: String, default: '' },
       city: { type: String, default: '' },

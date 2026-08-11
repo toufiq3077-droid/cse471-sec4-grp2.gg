@@ -145,8 +145,9 @@ exports.getOrderById = async (req, res) => {
     const isFarmer = order.items.some(
       (item) => item.farmerId && String(item.farmerId) === currentUserId
     );
+    const isRider = order.riderId && String(order.riderId) === currentUserId;
 
-    if (!isBuyer && !isAdmin && !isFarmer) {
+    if (!isBuyer && !isAdmin && !isFarmer && !isRider) {
       return res.status(403).json({ success: false, message: 'You are not allowed to view this order' });
     }
 
