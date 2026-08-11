@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Sprout, User, LogOut, LogIn, UserPlus, Menu, X, ShieldAlert, Stethoscope, Truck, ShoppingBag, LayoutDashboard, Store, ShoppingCart } from 'lucide-react';
+import { Sprout, User, LogOut, LogIn, UserPlus, Menu, X, ShieldAlert, Stethoscope, Truck, ShoppingBag, LayoutDashboard, Store, ShoppingCart, CloudSun } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 
 export default function Navbar() {
@@ -109,6 +109,15 @@ export default function Navbar() {
                   }`}
                 >
                   Experts Directory
+                </Link>
+                <Link
+                  to="/weather"
+                  className={`text-sm font-medium transition flex items-center gap-1.5 ${
+                    isActive('/weather') ? 'text-sky-600 font-semibold' : 'text-gray-600 hover:text-sky-600'
+                  }`}
+                >
+                  <CloudSun className="w-4 h-4" />
+                  Weather
                 </Link>
               </>
             )}
@@ -247,6 +256,14 @@ export default function Navbar() {
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50"
               >
                 Experts Directory
+              </Link>
+              <Link
+                to="/weather"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-sky-600 hover:bg-sky-50"
+              >
+                <CloudSun className="w-4 h-4" />
+                Weather Dashboard
               </Link>
             </>
           )}

@@ -21,6 +21,7 @@ import CartPage from '../pages/marketplace/CartPage';
 import CheckoutPage from '../pages/marketplace/CheckoutPage';
 import OrderInvoicePage from '../pages/marketplace/OrderInvoicePage';
 import OrderHistoryPage from '../pages/marketplace/OrderHistoryPage';
+import WeatherDashboardPage from '../pages/weather/WeatherDashboardPage';
 
 function RootRedirect() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -115,6 +116,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <DiagnosisHistory />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/weather"
+        element={
+          <ProtectedRoute>
+            <WeatherDashboardPage />
           </ProtectedRoute>
         }
       />

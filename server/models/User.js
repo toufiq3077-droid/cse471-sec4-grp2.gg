@@ -35,6 +35,12 @@ const userSchema = new mongoose.Schema(
       district: { type: String, default: '' },
       postalCode: { type: String, default: '' },
     },
+    farmLocation: {
+      latitude: { type: Number, default: 23.8103 },
+      longitude: { type: Number, default: 90.4125 },
+      locationName: { type: String, default: 'Dhaka Farm' },
+      district: { type: String, default: 'Dhaka' },
+    },
     profileImage: {
       type: String,
       default: '',

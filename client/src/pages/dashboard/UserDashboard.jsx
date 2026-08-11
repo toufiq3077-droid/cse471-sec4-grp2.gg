@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Sprout, Stethoscope, History, User, ShoppingBag, Truck, BadgeCheck, ArrowRight, ShieldCheck, Store, Receipt, Package } from 'lucide-react';
+import { Sprout, Stethoscope, History, User, ShoppingBag, Truck, BadgeCheck, ArrowRight, ShieldCheck, Store, Receipt, Package, CloudSun } from 'lucide-react';
 
 export default function UserDashboard() {
   const { user } = useAuth();
@@ -126,6 +126,14 @@ export default function UserDashboard() {
       icon: User,
       color: 'bg-amber-50 text-amber-700 border-amber-200',
       btnBg: 'bg-amber-600 hover:bg-amber-700',
+    },
+    {
+      title: 'Hyper-Local Weather Dashboard',
+      desc: 'Real-time farm weather, 7-day forecast, and smart agricultural insights tied to your GPS coordinates.',
+      href: '/weather',
+      icon: CloudSun,
+      color: 'bg-sky-50 text-sky-700 border-sky-200',
+      btnBg: 'bg-sky-600 hover:bg-sky-700',
     },
   ];
 
