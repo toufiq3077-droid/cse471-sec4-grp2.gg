@@ -156,9 +156,10 @@ function extractJsonPayload(text) {
 }
 
 // ─── Normalization ────────────────────────────────────────────────────────────
-function normalizeText(value) {
-  if (value === null || value === undefined) return '';
-  return String(value).trim();
+function normalizeText(value, fallback = 'N/A') {
+  if (value === null || value === undefined) return fallback;
+  const str = String(value).trim();
+  return str.length > 0 ? str : fallback;
 }
 
 function normalizeConfidence(value) {
