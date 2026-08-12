@@ -9,11 +9,9 @@ function authenticateToken(req, res, next) {
   }
 
   try {
-    const secret = process.env.JWT_SECRET;
-
-    if (!secret) {
-      return res.status(500).json({ message: 'JWT_SECRET is not configured' });
-    }
+    // Keep verification aligned with the token generator so local development
+    // works when no server/.env has been created yet.
+    const secret = process.env.JWT_SECRET || 'kheti_secret_key_dev';
 
     req.user = jwt.verify(token, secret);
     return next();

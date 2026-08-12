@@ -93,14 +93,24 @@ export default function Navbar() {
                   Marketplace
                 </Link>
                 {user?.role === 'farmer' && (
-                  <Link
-                    to="/my-listings"
-                    className={`text-sm font-medium transition ${
-                      isActive('/my-listings') ? 'text-emerald-600 font-semibold' : 'text-gray-600 hover:text-emerald-600'
-                    }`}
-                  >
-                    My Listings
-                  </Link>
+                  <>
+                    <Link
+                      to="/my-listings"
+                      className={`text-sm font-medium transition ${
+                        isActive('/my-listings') ? 'text-emerald-600 font-semibold' : 'text-gray-600 hover:text-emerald-600'
+                      }`}
+                    >
+                      My Listings
+                    </Link>
+                    <Link
+                      to="/farmer-marketplace-summary"
+                      className={`text-sm font-medium transition ${
+                        isActive('/farmer-marketplace-summary') ? 'text-emerald-600 font-semibold' : 'text-gray-600 hover:text-emerald-600'
+                      }`}
+                    >
+                      Sales Summary
+                    </Link>
+                  </>
                 )}
                 {user?.role === 'rider' && (
                   <Link
@@ -239,13 +249,22 @@ export default function Navbar() {
                 Marketplace
               </Link>
               {user?.role === 'farmer' && (
-                <Link
-                  to="/my-listings"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50"
-                >
-                  My Listings
-                </Link>
+                <>
+                  <Link
+                    to="/my-listings"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50"
+                  >
+                    My Listings
+                  </Link>
+                  <Link
+                    to="/farmer-marketplace-summary"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50"
+                  >
+                    Sales Summary
+                  </Link>
+                </>
               )}
               {user?.role === 'rider' && (
                 <Link
