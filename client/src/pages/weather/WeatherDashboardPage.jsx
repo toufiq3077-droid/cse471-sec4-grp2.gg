@@ -1,11 +1,13 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { weatherApi } from '../../services/weatherApi';
+import { notificationApi } from '../../services/notificationApi';
+import { useSocket } from '../../context/SocketContext';
 import {
   Cloud, Wind, Droplets, Thermometer, Eye, Gauge, MapPin,
   RefreshCw, Locate, Save, AlertTriangle, CheckCircle, XCircle,
   Sun, CloudRain, CloudSnow, CloudLightning, CloudDrizzle, Loader2,
-  Sprout, Beaker, Tractor, ShieldCheck, Info, ChevronDown
+  Sprout, Beaker, Tractor, ShieldCheck, Info, ChevronDown, Zap, Bell
 } from 'lucide-react';
 
 // ─── Utility: map OWM icon code to component ──────────────────────────────────
@@ -91,6 +93,7 @@ function ForecastCard({ day }) {
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 export default function WeatherDashboardPage() {
   const { token, user } = useAuth();
+  const { connected } = useSocket() || {};
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -102,6 +105,10 @@ export default function WeatherDashboardPage() {
   const [showManual, setShowManual] = useState(false);
   const [activeLat, setActiveLat] = useState(null);
   const [activeLon, setActiveLon] = useState(null);
+  const [testAlertLoading, setTestAlertLoading] = useState(false);
+  const [testAlertMsg, setTestAlertMsg] = useState(null);
+
+  const autoAlertSentRef = React.useRef(false);
 
   const fetchWeather = useCallback(async (lat = null, lon = null) => {
     setLoading(true);
@@ -111,6 +118,28 @@ export default function WeatherDashboardPage() {
       setWeather(res.data);
       if (lat) setActiveLat(lat);
       if (lon) setActiveLon(lon);
+
+      // Automatically send notification if weather risk detected
+      if (res.data && !autoAlertSentRef.current) {
+        const { current, agriInsights } = res.data;
+        const hasRisk = 
+          agriInsights?.spraying?.status?.includes('Unsafe') ||
+          agriInsights?.diseaseRisk?.status?.includes('High') ||
+          agriInsights?.diseaseRisk?.status?.includes('Moderate') ||
+          agriInsights?.harvest?.status?.includes('Postpone') ||
+          (current?.rainProbability && current.rainProbability >= 40);
+
+        if (hasRisk) {
+          autoAlertSentRef.current = true;
+          const riskDetail = agriInsights?.spraying?.advice || agriInsights?.diseaseRisk?.advice || agriInsights?.harvest?.advice || 'Weather hazards detected near your farm.';
+          notificationApi.triggerTestWeatherAlert(token, {
+            title: `⚠️ Weather Risk at ${current?.locationName || 'Your Farm'}!`,
+            message: riskDetail,
+            severity: agriInsights?.diseaseRisk?.status?.includes('High') || (current?.rainProbability > 60) ? 'critical' : 'warning',
+            riskType: agriInsights?.spraying?.status || agriInsights?.diseaseRisk?.status || 'Severe Weather Risk',
+          }).catch(() => {});
+        }
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -229,7 +258,39 @@ export default function WeatherDashboardPage() {
                 <RefreshCw className="w-4 h-4" />
                 Refresh
               </button>
+              <button
+                id="btn-live-alert"
+                onClick={async () => {
+                  setTestAlertLoading(true);
+                  setTestAlertMsg(null);
+                  try {
+                    const currentRisk = weather?.agriInsights?.spraying?.advice || weather?.agriInsights?.diseaseRisk?.advice || 'Heavy rain (85%) & strong wind (30 km/h) detected. Hold spraying operations immediately.';
+                    await notificationApi.triggerTestWeatherAlert(token, {
+                      title: `🚨 Live Weather Risk Alert!`,
+                      message: `${currentRisk} (Location: ${weather?.current?.locationName || 'My Farm'})`,
+                      severity: 'critical',
+                      riskType: weather?.agriInsights?.diseaseRisk?.status || 'High Wind & Heavy Rain',
+                    });
+                    setTestAlertMsg('⚡ Live alert sent! Check your notification bell.');
+                  } catch (e) {
+                    setTestAlertMsg('Failed: ' + e.message);
+                  } finally {
+                    setTestAlertLoading(false);
+                    setTimeout(() => setTestAlertMsg(null), 5000);
+                  }
+                }}
+                disabled={testAlertLoading}
+                className="inline-flex items-center gap-2 bg-amber-400/30 hover:bg-amber-400/50 backdrop-blur border border-amber-300/50 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition disabled:opacity-60"
+              >
+                {testAlertLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4 text-amber-300" />}
+                Live Alert
+              </button>
             </div>
+            {testAlertMsg && (
+              <div className="bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-sm text-white font-medium">
+                {testAlertMsg}
+              </div>
+            )}
           </div>
 
           {/* Manual Coordinate Input */}

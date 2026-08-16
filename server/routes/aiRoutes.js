@@ -8,7 +8,17 @@ const { authenticateToken } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-const SUPPORTED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const SUPPORTED_IMAGE_TYPES = new Set([
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+  'image/pjpeg',
+  'image/x-png',
+  'application/octet-stream',
+]);
+
+const ALLOWED_EXTENSIONS = /\.(jpg|jpeg|png|webp|jfif)$/i;
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 
 const upload = multer({
@@ -17,7 +27,10 @@ const upload = multer({
     fileSize: MAX_IMAGE_SIZE_BYTES,
   },
   fileFilter: (req, file, cb) => {
-    if (!SUPPORTED_IMAGE_TYPES.has(file.mimetype)) {
+    const isMimeValid = file.mimetype && SUPPORTED_IMAGE_TYPES.has(file.mimetype.toLowerCase());
+    const isExtValid = file.originalname && ALLOWED_EXTENSIONS.test(file.originalname.toLowerCase());
+
+    if (!isMimeValid && !isExtValid) {
       const error = new Error('Unsupported file type. Only JPEG, PNG, and WEBP are allowed.');
       error.statusCode = 400;
       return cb(error, false);
@@ -28,8 +41,11 @@ const upload = multer({
 });
 
 function handleUpload(req, res, next) {
-  upload.single('image')(req, res, (error) => {
+  upload.any()(req, res, (error) => {
     if (!error) {
+      if (req.files && req.files.length > 0) {
+        req.file = req.files[0];
+      }
       return next();
     }
 

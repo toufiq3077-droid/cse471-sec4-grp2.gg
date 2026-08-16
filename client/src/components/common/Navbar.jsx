@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Sprout, User, LogOut, LogIn, UserPlus, Menu, X, ShieldAlert, Stethoscope, Truck, ShoppingBag, LayoutDashboard, Store, ShoppingCart, CloudSun } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import NotificationBell from './NotificationBell';
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -138,6 +139,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
+                <NotificationBell />
                 {user?.role === 'buyer' && (
                   <Link
                     to="/cart"
