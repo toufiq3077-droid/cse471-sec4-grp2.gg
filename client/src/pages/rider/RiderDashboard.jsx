@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Truck, Loader, Package, MapPin, Phone, User, RefreshCw, PackageCheck } from 'lucide-react';
+import { Truck, Loader, Package, MapPin, Phone, User, RefreshCw, PackageCheck, Navigation } from 'lucide-react';
 import { riderApi } from '../../services/riderApi';
 
 const STATUS_STYLES = {
@@ -104,6 +104,7 @@ export default function RiderDashboard() {
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -137,6 +138,10 @@ export default function RiderDashboard() {
     } finally {
       setBusyId(null);
     }
+  };
+
+  const startDelivery = async (order) => {
+    navigate(`/rider/deliveries/${order._id}`);
   };
 
   const activeDeliveries = deliveries.filter((o) => ['processing', 'shipped'].includes(o.status));
@@ -234,15 +239,13 @@ export default function RiderDashboard() {
                     key={order._id}
                     order={order}
                     onAction={(o) =>
-                      runAction(
-                        o,
-                        (id) => riderApi.updateStatus(id, order.status === 'processing' ? 'shipped' : 'delivered'),
-                        order.status === 'processing' ? 'Order marked as shipped' : 'Order marked as delivered'
-                      )
+                      order.status === 'processing'
+                        ? startDelivery(o)
+                        : navigate(`/rider/deliveries/${o._id}`)
                     }
-                    actionLabel={order.status === 'processing' ? 'Start Delivery (Shipped)' : 'Mark as Delivered'}
+                    actionLabel={order.status === 'processing' ? 'Start Delivery & Track Live' : 'Track Live'}
                     actionClass={
-                      order.status === 'processing' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'
+                      order.status === 'processing' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-indigo-600 hover:bg-indigo-700'
                     }
                     busy={busyId === order._id}
                   />

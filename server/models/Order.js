@@ -69,6 +69,76 @@ const paymentSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const coordinateSchema = new mongoose.Schema(
+  {
+    lat: { type: Number, required: true },
+    lng: { type: Number, required: true },
+  },
+  { _id: false }
+);
+
+const locationSchema = new mongoose.Schema(
+  {
+    lat: { type: Number, default: null },
+    lng: { type: Number, default: null },
+    label: { type: String, default: '' },
+  },
+  { _id: false }
+);
+
+const trackingLegSchema = new mongoose.Schema(
+  {
+    label: { type: String, default: '' },
+    originName: { type: String, default: '' },
+    destinationName: { type: String, default: '' },
+    distanceMeters: { type: Number, default: 0 },
+    durationSeconds: { type: Number, default: 0 },
+  },
+  { _id: false }
+);
+
+const trackingSchema = new mongoose.Schema(
+  {
+    riderLocation: {
+      type: locationSchema,
+      default: {},
+    },
+    pickupLocation: {
+      type: locationSchema,
+      default: {},
+    },
+    deliveryLocation: {
+      type: locationSchema,
+      default: {},
+    },
+    routeCoordinates: {
+      type: [coordinateSchema],
+      default: [],
+    },
+    legs: {
+      type: [trackingLegSchema],
+      default: [],
+    },
+    distanceMeters: {
+      type: Number,
+      default: 0,
+    },
+    durationSeconds: {
+      type: Number,
+      default: 0,
+    },
+    demoStartedAt: {
+      type: Date,
+      default: null,
+    },
+    isFallback: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { _id: false }
+);
+
 const orderSchema = new mongoose.Schema(
   {
     orderNumber: {
@@ -108,11 +178,19 @@ const orderSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    riderEarning: {
+      type: Number,
+      default: null,
+    },
     shippingAddress: {
       street: { type: String, default: '' },
       city: { type: String, default: '' },
       district: { type: String, default: '' },
       postalCode: { type: String, default: '' },
+    },
+    deliveryPoint: {
+      type: locationSchema,
+      default: {},
     },
     items: [orderItemSchema],
     itemCount: {
@@ -139,6 +217,10 @@ const orderSchema = new mongoose.Schema(
       default: 'pending',
     },
     payment: paymentSchema,
+    tracking: {
+      type: trackingSchema,
+      default: {},
+    },
   },
   {
     timestamps: true,

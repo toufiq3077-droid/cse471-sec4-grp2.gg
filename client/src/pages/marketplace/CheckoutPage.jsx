@@ -5,6 +5,7 @@ import { ArrowLeft, CreditCard, Banknote, MapPin, Loader, Package } from 'lucide
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { orderApi } from '../../services/orderApi';
+import AddressPickerMap from '../../components/common/AddressPickerMap';
 
 const DELIVERY_FEE = 60;
 
@@ -36,6 +37,7 @@ export default function CheckoutPage() {
     postalCode: user?.address?.postalCode || '',
   });
   const [placing, setPlacing] = useState(false);
+  const [deliveryPoint, setDeliveryPoint] = useState(null);
 
   const items = cart.items || [];
   const subtotal = cart.subtotal || 0;
@@ -43,6 +45,18 @@ export default function CheckoutPage() {
 
   const handleChange = (e) => {
     setAddress({ ...address, [e.target.name]: e.target.value });
+  };
+
+  const handleMapPoint = (point) => {
+    setDeliveryPoint(point);
+    if (point) {
+      setAddress((prev) => ({
+        street: point.street || prev.street,
+        city: point.city || prev.city,
+        district: point.district || prev.district,
+        postalCode: point.postalCode || prev.postalCode,
+      }));
+    }
   };
 
   const handlePlaceOrder = async (e) => {
@@ -56,10 +70,18 @@ export default function CheckoutPage() {
       toast.error('Please fill in your delivery address.');
       return;
     }
+    if (!deliveryPoint || deliveryPoint.lat == null || deliveryPoint.lng == null) {
+      toast.error('Please point your delivery location on the map.');
+      return;
+    }
 
     setPlacing(true);
     try {
-      const data = await orderApi.place({ paymentMethod, shippingAddress: address });
+      const data = await orderApi.place({
+        paymentMethod,
+        shippingAddress: address,
+        deliveryPoint,
+      });
       await clearCart();
       toast.success(data.message || 'Order placed successfully!');
       navigate(`/orders/${data.order._id}`);
@@ -150,6 +172,16 @@ export default function CheckoutPage() {
                   className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 text-sm"
                 />
               </div>
+            </div>
+
+            <div className="mt-5 pt-5 border-t border-slate-100">
+              <p className="text-xs font-semibold uppercase text-slate-600 mb-1">
+                Point your delivery location on the map or use my location
+              </p>
+              <AddressPickerMap
+                value={deliveryPoint}
+                onChange={handleMapPoint}
+              />
             </div>
           </div>
 

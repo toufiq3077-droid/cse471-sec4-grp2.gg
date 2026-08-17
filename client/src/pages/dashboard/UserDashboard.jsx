@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Sprout, Stethoscope, History, User, ShoppingBag, Truck, BadgeCheck, ArrowRight, ShieldCheck, Store, Receipt, Package, CloudSun } from 'lucide-react';
+import { Sprout, Stethoscope, History, User, ShoppingBag, Truck, BadgeCheck, ArrowRight, ShieldCheck, Store, Receipt, Package, CloudSun, Wallet } from 'lucide-react';
 export default function UserDashboard() {
   const { user } = useAuth();
 
@@ -92,6 +92,14 @@ export default function UserDashboard() {
             icon: Truck,
             color: 'bg-amber-50 text-amber-700 border-amber-200',
             btnBg: 'bg-amber-600 hover:bg-amber-700',
+          },
+          {
+            title: 'My Earnings',
+            desc: 'View delivery earnings, weekly stats, and request payouts.',
+            href: '/rider/earnings',
+            icon: Wallet,
+            color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            btnBg: 'bg-emerald-600 hover:bg-emerald-700',
           },
         ]
       : []),

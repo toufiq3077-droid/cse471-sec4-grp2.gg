@@ -13,6 +13,9 @@ import AdminDashboard from '../pages/admin/AdminDashboard';
 import UserDashboard from '../pages/dashboard/UserDashboard';
 import ProtectedRoute from '../components/common/ProtectedRoute';
 import RiderDashboard from '../pages/rider/RiderDashboard';
+import RiderEarningsPage from '../pages/rider/RiderEarningsPage';
+import RiderTrackingPage from '../pages/tracking/RiderTrackingPage';
+import BuyerTrackingPage from '../pages/tracking/BuyerTrackingPage';
 import MarketplacePage from '../pages/marketplace/MarketplacePage';
 import ListingDetailPage from '../pages/marketplace/ListingDetailPage';
 import MyListingsPage from '../pages/marketplace/MyListingsPage';
@@ -93,6 +96,30 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['rider']}>
             <RiderDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/rider/earnings"
+        element={
+          <ProtectedRoute allowedRoles={['rider']}>
+            <RiderEarningsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/rider/deliveries/:id"
+        element={
+          <ProtectedRoute allowedRoles={['rider']}>
+            <RiderTrackingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/orders/:id/tracking"
+        element={
+          <ProtectedRoute allowedRoles={['buyer', 'farmer', 'admin', 'rider']}>
+            <BuyerTrackingPage />
           </ProtectedRoute>
         }
       />

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Printer, Package, MapPin, Phone, User as UserIcon, CheckCircle2, Clock, CreditCard, Truck } from 'lucide-react';
+import { ArrowLeft, Printer, Package, MapPin, Phone, User as UserIcon, CheckCircle2, CreditCard,
+  Truck, Navigation } from 'lucide-react';
 import { orderApi } from '../../services/orderApi';
 
 const STATUS_STYLES = {
@@ -132,6 +133,11 @@ export default function OrderInvoicePage() {
                   .join(', ')}
                 {order.shippingAddress?.postalCode ? ` - ${order.shippingAddress.postalCode}` : ''}
               </p>
+              {order.deliveryPoint?.lat != null && (
+                <p className="text-xs text-slate-500 mt-2 pt-2 border-t border-slate-200">
+                  Map point: {order.deliveryPoint.label || `${order.deliveryPoint.lat.toFixed(5)}°, ${order.deliveryPoint.lng.toFixed(5)}°`}
+                </p>
+              )}
             </div>
           </div>
 
@@ -171,6 +177,14 @@ export default function OrderInvoicePage() {
                   ? 'Your order has been delivered by the rider above.'
                   : 'A rider has accepted your order and is handling the delivery.'}
               </p>
+              {['processing', 'shipped'].includes(order.status) && (
+                <Link
+                  to={`/orders/${order._id}/tracking`}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-indigo-200 transition"
+                >
+                  <Navigation className="w-4 h-4" /> Track Delivery Live
+                </Link>
+              )}
             </div>
           )}
 
@@ -255,20 +269,6 @@ export default function OrderInvoicePage() {
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Status note */}
-          <div className="mt-8 flex items-start gap-2 bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-sm text-emerald-800">
-            {order.status === 'delivered' ? (
-              <CheckCircle2 className="w-5 h-5 shrink-0" />
-            ) : (
-              <Clock className="w-5 h-5 shrink-0" />
-            )}
-            <p>
-              {order.status === 'delivered'
-                ? 'This order has been delivered. Thank you for shopping with Khet-i!'
-                : 'Your order is being processed. You can track its status here.'}
-            </p>
           </div>
         </div>
       </div>
