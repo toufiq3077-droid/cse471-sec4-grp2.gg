@@ -3,6 +3,10 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ExpertBookingPage from '../pages/expert/ExpertBookingPage';
 import ExpertRegistrationPage from '../pages/expert/ExpertRegistrationPage';
+import ConsultationDetailPage from '../pages/expert/ConsultationDetailPage';
+import ExpertConsultationsPage from '../pages/expert/ExpertConsultationsPage';
+import FarmerConsultationsPage from '../pages/expert/FarmerConsultationsPage';
+import ConsultationHistoryPage from '../pages/expert/ConsultationHistoryPage';
 import DiseaseDiagnosis from '../features/ai/pages/DiseaseDiagnosis';
 import DiagnosisHistory from '../features/ai/pages/DiagnosisHistory';
 import LoginPage from '../pages/auth/LoginPage';
@@ -138,6 +142,38 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <ExpertRegistrationPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/consultations"
+        element={
+          <ProtectedRoute allowedRoles={['farmer', 'expert']}>
+            <ConsultationHistoryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/consultations/:id"
+        element={
+          <ProtectedRoute allowedRoles={['farmer', 'expert', 'admin']}>
+            <ConsultationDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/expert/consultations"
+        element={
+          <ProtectedRoute allowedRoles={['expert']}>
+            <ExpertConsultationsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/farmer/consultations"
+        element={
+          <ProtectedRoute allowedRoles={['farmer']}>
+            <FarmerConsultationsPage />
           </ProtectedRoute>
         }
       />

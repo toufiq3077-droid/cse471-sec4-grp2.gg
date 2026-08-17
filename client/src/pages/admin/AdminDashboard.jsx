@@ -2,13 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { adminApi } from '../../services/adminApi';
 import toast from 'react-hot-toast';
-import { Users, Sprout, ShoppingBag, Stethoscope, Truck, ShieldAlert, RefreshCw, CheckCircle, XCircle, Search, ShieldCheck, Clock } from 'lucide-react';
+import { Users, Sprout, ShoppingBag, Stethoscope, Truck, ShieldAlert, RefreshCw, CheckCircle, XCircle, Search, ShieldCheck, Clock, DollarSign, TrendingUp, Wallet } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { token } = useAuth();
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
   const [pendingExperts, setPendingExperts] = useState([]);
+  const [revenue, setRevenue] = useState(null);
+  const [revenueLoading, setRevenueLoading] = useState(true);
+  const [pendingPayments, setPendingPayments] = useState([]);
+  const [pendingPaymentsLoading, setPendingPaymentsLoading] = useState(true);
+  const [paymentActionId, setPaymentActionId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expertsLoading, setExpertsLoading] = useState(true);
   const [expertActionId, setExpertActionId] = useState(null);
@@ -42,10 +47,36 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchRevenue = async () => {
+    setRevenueLoading(true);
+    try {
+      const res = await adminApi.getConsultationRevenue(token);
+      setRevenue(res.revenue);
+    } catch (error) {
+      toast.error(error.message || 'Failed to load consultation revenue');
+    } finally {
+      setRevenueLoading(false);
+    }
+  };
+
+  const fetchPendingPayments = async () => {
+    setPendingPaymentsLoading(true);
+    try {
+      const res = await adminApi.getPendingCashPayments(token);
+      setPendingPayments(res.consultations || []);
+    } catch (error) {
+      toast.error(error.message || 'Failed to load pending pay-later approvals');
+    } finally {
+      setPendingPaymentsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (token) {
       fetchData();
       fetchPendingExperts();
+      fetchRevenue();
+      fetchPendingPayments();
     }
   }, [token]);
 
@@ -71,6 +102,20 @@ export default function AdminDashboard() {
       toast.error(error.message || `Failed to ${decision} expert`);
     } finally {
       setExpertActionId(null);
+    }
+  };
+
+  const handleApprovePayment = async (consultationId) => {
+    setPaymentActionId(consultationId);
+    try {
+      const res = await adminApi.approveCashPayment(consultationId, token);
+      toast.success(res.message || 'Payment approved. Chat is now unlocked.');
+      setPendingPayments((prev) => prev.filter((c) => c._id !== consultationId));
+      fetchRevenue();
+    } catch (error) {
+      toast.error(error.message || 'Failed to approve payment');
+    } finally {
+      setPaymentActionId(null);
     }
   };
 
@@ -153,6 +198,147 @@ export default function AdminDashboard() {
           <span className="text-2xl font-black text-slate-900">{stats?.admins || 0}</span>
           <span className="text-xs text-slate-500 font-medium">Admins</span>
         </div>
+      </div>
+
+      {/* Consultation Revenue Monitoring */}
+      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 mb-8">
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-emerald-500" /> Consultation Revenue
+            </h2>
+            <p className="text-xs text-slate-500">Monitor revenue collected from paid farmer–expert consultations</p>
+          </div>
+          <button
+            onClick={fetchRevenue}
+            disabled={revenueLoading}
+            className="text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center gap-2"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${revenueLoading ? 'animate-spin' : ''}`} /> Refresh
+          </button>
+        </div>
+
+        {revenueLoading ? (
+          <p className="text-sm text-slate-500 py-6 text-center">Loading revenue data...</p>
+        ) : !revenue ? (
+          <p className="text-sm text-slate-500 py-6 text-center">No revenue data available.</p>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl flex flex-col items-center text-center">
+                <TrendingUp className="w-5 h-5 text-emerald-600 mb-1.5" />
+                <span className="text-2xl font-black text-emerald-800">${revenue.totalRevenue}</span>
+                <span className="text-xs text-emerald-700 font-medium">Total Revenue</span>
+              </div>
+              <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex flex-col items-center text-center">
+                <CheckCircle className="w-5 h-5 text-slate-600 mb-1.5" />
+                <span className="text-2xl font-black text-slate-900">{revenue.paidConsultations}</span>
+                <span className="text-xs text-slate-500 font-medium">Paid Consultations</span>
+              </div>
+              <div className="bg-amber-50 border border-amber-100 p-4 rounded-2xl flex flex-col items-center text-center">
+                <Clock className="w-5 h-5 text-amber-600 mb-1.5" />
+                <span className="text-2xl font-black text-amber-800">{revenue.pendingPaymentCount}</span>
+                <span className="text-xs text-amber-700 font-medium">Awaiting Payment</span>
+              </div>
+              <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex flex-col items-center text-center">
+                <ShieldCheck className="w-5 h-5 text-slate-600 mb-1.5" />
+                <span className="text-2xl font-black text-slate-900">{revenue.statusBreakdown?.completed || 0}</span>
+                <span className="text-xs text-slate-500 font-medium">Completed</span>
+              </div>
+            </div>
+
+            {revenue.topExperts?.length > 0 && (
+              <div>
+                <h3 className="text-sm font-bold text-slate-700 mb-3">Top Earning Experts</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      <tr>
+                        <th className="py-2 px-3">Expert</th>
+                        <th className="py-2 px-3">Specialization</th>
+                        <th className="py-2 px-3">Consultations</th>
+                        <th className="py-2 px-3">Revenue</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {revenue.topExperts.map((e) => (
+                        <tr key={e.expertId}>
+                          <td className="py-2 px-3 font-medium text-slate-800">{e.expertName || 'Unknown'}</td>
+                          <td className="py-2 px-3 text-slate-500">{e.specialization || '—'}</td>
+                          <td className="py-2 px-3 text-slate-600">{e.consultations}</td>
+                          <td className="py-2 px-3 font-bold text-emerald-700">${e.revenue}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Pending Pay-Later (Cash on Delivery) Payment Approvals */}
+      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 mb-8">
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <Wallet className="w-5 h-5 text-amber-500" /> Pending Pay-Later Approvals
+            </h2>
+            <p className="text-xs text-slate-500">
+              Farmers who chose "Pay Later" — approve once cash payment is confirmed to unlock their consultation chat
+            </p>
+          </div>
+          <button
+            onClick={fetchPendingPayments}
+            disabled={pendingPaymentsLoading}
+            className="text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center gap-2"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${pendingPaymentsLoading ? 'animate-spin' : ''}`} /> Refresh
+          </button>
+        </div>
+
+        {pendingPaymentsLoading ? (
+          <p className="text-sm text-slate-500 py-6 text-center">Loading pending payments...</p>
+        ) : pendingPayments.length === 0 ? (
+          <p className="text-sm text-slate-500 py-6 text-center">No pay-later consultations waiting for approval.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <tr>
+                  <th className="py-2 px-3">Farmer</th>
+                  <th className="py-2 px-3">Expert</th>
+                  <th className="py-2 px-3">Date</th>
+                  <th className="py-2 px-3">Fee</th>
+                  <th className="py-2 px-3">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {pendingPayments.map((c) => (
+                  <tr key={c._id}>
+                    <td className="py-2 px-3 font-medium text-slate-800">{c.farmerId?.name || 'Unknown'}</td>
+                    <td className="py-2 px-3 text-slate-600">{c.expertId?.name || 'Unknown'}</td>
+                    <td className="py-2 px-3 text-slate-500">
+                      {new Date(c.consultationDate).toLocaleDateString()} &middot; {c.timeSlot}
+                    </td>
+                    <td className="py-2 px-3 font-bold text-slate-700">${c.fee}</td>
+                    <td className="py-2 px-3">
+                      <button
+                        onClick={() => handleApprovePayment(c._id)}
+                        disabled={paymentActionId === c._id}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        {paymentActionId === c._id ? 'Approving...' : 'Approve Payment'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Pending Expert Applications */}
