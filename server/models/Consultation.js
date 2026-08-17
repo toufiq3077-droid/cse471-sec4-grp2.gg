@@ -46,6 +46,43 @@ const consultationSchema = new mongoose.Schema(
       ],
       default: "pending",
     },
+
+    payment: {
+      method: {
+        type: String,
+        enum: ["mock_bkash", "cash_on_delivery"],
+        default: null,
+      },
+      status: {
+        type: String,
+        enum: ["unpaid", "paid", "refunded", "failed"],
+        default: "unpaid",
+      },
+      transactionId: {
+        type: String,
+        default: "",
+      },
+      paidAt: {
+        type: Date,
+        default: null,
+      },
+    },
+
+    lastMessageAt: {
+      type: Date,
+      default: null,
+    },
+
+    endedBy: {
+      type: String,
+      enum: ["farmer", "expert", "admin", null],
+      default: null,
+    },
+
+    endedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

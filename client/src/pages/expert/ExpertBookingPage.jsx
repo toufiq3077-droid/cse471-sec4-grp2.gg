@@ -5,6 +5,7 @@ import {
   User,
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 
 
 import { api } from "../../services/expertApi";
@@ -12,6 +13,7 @@ import ExpertCard from "../../components/expert/ExpertCard";
 import CalendarBooking from "../../components/expert/CalendarBooking";
 // ─── Main Module 1 Page ───────────────────────────────────────────────────────
 export default function ExpertBookingPage() {
+  const navigate = useNavigate();
   const [experts, setExperts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -51,8 +53,9 @@ export default function ExpertBookingPage() {
           onBack={() => setSelectedExpert(null)}
           onBooked={(consultation) => {
             setSelectedExpert(null);
-            // Could navigate to consultation detail or show success
-            console.log("Booked:", consultation);
+            // Send them straight to the detail page to complete payment
+            // and unlock secure chat with the expert.
+            navigate(`/consultations/${consultation._id}`);
           }}
         />
       </div>

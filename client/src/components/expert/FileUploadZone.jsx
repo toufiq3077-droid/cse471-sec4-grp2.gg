@@ -1,4 +1,5 @@
-import FileUploadZone from "../../components/expert/FileUploadZone";
+import { useRef } from "react";
+import { AlertCircle, CheckCircle, FileText, Loader, Upload, X } from "lucide-react";
 
 function FileUploadZone({ label, files, onAdd, onRemove, accept = ".pdf,.jpg,.jpeg,.png", maxFiles = 5 }) {
   const inputRef = useRef(null);

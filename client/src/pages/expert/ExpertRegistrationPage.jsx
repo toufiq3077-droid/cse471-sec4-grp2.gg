@@ -14,7 +14,7 @@ import {
   Loader,
 } from "lucide-react";
 
-import StepIndicator from "../../components/expert/2/StepIndicator";
+import StepIndicator from "../../components/expert/StepIndicator";
 import FileUploadZone from "../../components/expert/FileUploadZone";
 import AvailabilityBuilder from "../../components/expert/AvailabilityBuilder";
 import { api } from "../../services/expertRegistrationApi";
@@ -136,8 +136,8 @@ export default function ExpertRegistrationPage() {
         } else {
         showToast(data.message || "Submission failed");
         }
-     } catch {
-        showToast("Network error. Try again.");
+     } catch (err) {
+        showToast(err?.message ? `Network error: ${err.message}` : "Network error. Try again.");
      } finally {
         setSubmitting(false);
      }
