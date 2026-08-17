@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY || '8699ba13c289e7b5faf7adbd0f6e50bf';
+const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY || '899ba13c289e7b5faf7adbd0f6e50bf';
 const BASE_URL = 'https://api.openweathermap.org/data/2.5';
 
 /**
