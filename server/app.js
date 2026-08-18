@@ -16,6 +16,7 @@ const riderRoutes = require('./routes/riderRoutes');
 const weatherRoutes = require('./routes/weatherRoutes');
 const geocodeRoutes = require('./routes/geocodeRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const cropPlannerRoutes = require('./routes/cropPlannerRoutes');
 
 const app = express();
 
@@ -49,6 +50,7 @@ app.use('/api/riders', riderRoutes);
 app.use('/api/weather', weatherRoutes);
 app.use('/api/geocode', geocodeRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/crop-plans', cropPlannerRoutes);
 
 app.use((err, req, res, next) => {
   console.error('Server error:', err.message);

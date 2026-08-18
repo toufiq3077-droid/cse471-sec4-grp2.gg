@@ -30,6 +30,7 @@ import CheckoutPage from '../pages/marketplace/CheckoutPage';
 import OrderInvoicePage from '../pages/marketplace/OrderInvoicePage';
 import OrderHistoryPage from '../pages/marketplace/OrderHistoryPage';
 import WeatherDashboardPage from '../pages/weather/WeatherDashboardPage';
+import CropPlannerPage from '../pages/planner/CropPlannerPage';
 
 function RootRedirect() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -198,6 +199,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <WeatherDashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/planner"
+        element={
+          <ProtectedRoute allowedRoles={['farmer', 'admin']}>
+            <CropPlannerPage />
           </ProtectedRoute>
         }
       />

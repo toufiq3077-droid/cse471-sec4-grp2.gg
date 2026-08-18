@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Sprout, Stethoscope, History, User, ShoppingBag, Truck, BadgeCheck, ArrowRight, ShieldCheck, Store, Receipt, Package, CloudSun, Wallet, MessageCircle } from 'lucide-react';
+import { Sprout, Stethoscope, History, User, ShoppingBag, Truck, BadgeCheck, ArrowRight, ShieldCheck, Store, Receipt, Package, CloudSun, Wallet, MessageCircle, Calendar } from 'lucide-react';
 export default function UserDashboard() {
   const { user } = useAuth();
 
@@ -193,6 +193,14 @@ export default function UserDashboard() {
       icon: CloudSun,
       color: 'bg-sky-50 text-sky-700 border-sky-200',
       btnBg: 'bg-sky-600 hover:bg-sky-700',
+    },
+    {
+      title: 'Crop Lifecycle & Harvest Planner',
+      desc: 'Automated growth stage timelines, milestone agronomy checklists, and 1-click marketplace listing upon harvest.',
+      href: '/planner',
+      icon: Calendar,
+      color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      btnBg: 'bg-emerald-600 hover:bg-emerald-700',
     },
   ];
 
