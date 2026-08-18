@@ -195,10 +195,13 @@ async function diagnoseLeafDisease(file) {
   ensureValidImage(file);
 
   let payload;
+  let lastError = null;
 
+  const provider = getProviderName();
+
+  // Try Primary Provider
   try {
-    if (getProviderName() === 'gemini') {
-      // ── Gemini path ──────────────────────────────────────────────────────
+    if (provider === 'gemini') {
       const client = getGeminiClient();
       const prompt = buildGeminiPrompt();
       const response = await client.models.generateContent({
@@ -220,21 +223,62 @@ async function diagnoseLeafDisease(file) {
         config: { responseMimeType: 'application/json', temperature: 0.2 },
       });
       payload = extractJsonPayload(response.text);
-
     } else {
-      // ── HuggingFace path: Qwen2.5-VL (vision + text, single call) ────
       console.log('[AI] Using HuggingFace Qwen2.5-VL vision model...');
       const rawText = await callHuggingFaceVLM(file);
-      console.log('[AI] Raw VLM output:', rawText);
       payload = extractJsonPayload(rawText);
     }
-
   } catch (error) {
-    console.error('--- AI DIAGNOSIS ERROR ---');
-    console.error(error.response?.data || error.message || error);
-    const diagnosisError = new Error('Diagnosis request failed');
-    diagnosisError.statusCode = error.response?.status || error.statusCode || 502;
-    diagnosisError.cause = error;
+    console.warn(`[AI] Primary provider (${provider}) failed:`, error.response?.data || error.message);
+    lastError = error;
+
+    // Try Fallback Provider
+    if (provider === 'huggingface' && process.env.GEMINI_API_KEY) {
+      try {
+        console.log('[AI] Falling back to Google Gemini...');
+        const client = getGeminiClient();
+        const prompt = buildGeminiPrompt();
+        const response = await client.models.generateContent({
+          model: GEMINI_MODEL,
+          contents: [
+            {
+              role: 'user',
+              parts: [
+                { text: prompt },
+                {
+                  inlineData: {
+                    mimeType: file.mimetype,
+                    data: file.buffer.toString('base64'),
+                  },
+                },
+              ],
+            },
+          ],
+          config: { responseMimeType: 'application/json', temperature: 0.2 },
+        });
+        payload = extractJsonPayload(response.text);
+        lastError = null;
+      } catch (geminiErr) {
+        console.error('[AI] Gemini fallback also failed:', geminiErr.message);
+        lastError = geminiErr;
+      }
+    } else if (provider === 'gemini' && process.env.HF_API_KEY) {
+      try {
+        console.log('[AI] Falling back to HuggingFace...');
+        const rawText = await callHuggingFaceVLM(file);
+        payload = extractJsonPayload(rawText);
+        lastError = null;
+      } catch (hfErr) {
+        console.error('[AI] HuggingFace fallback also failed:', hfErr.message);
+        lastError = hfErr;
+      }
+    }
+  }
+
+  if (lastError || !payload) {
+    const errorDetail = lastError?.response?.data?.error?.message || lastError?.response?.data?.error || lastError?.message || 'Diagnosis request failed';
+    const diagnosisError = new Error(`AI Diagnosis Service Error: ${errorDetail}`);
+    diagnosisError.statusCode = lastError?.response?.status || lastError?.statusCode || 502;
     throw diagnosisError;
   }
 

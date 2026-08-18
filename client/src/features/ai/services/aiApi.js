@@ -1,7 +1,15 @@
 import axios from 'axios';
 
+const rawUrl = import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL
+  : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:9478'
+      : '');
+
+const cleanBaseUrl = rawUrl.endsWith('/api') ? rawUrl.slice(0, -4) : rawUrl;
+
 const aiApi = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://server-nu-one-37.vercel.app',
+  baseURL: cleanBaseUrl,
 });
 
 function getAuthHeaders() {
