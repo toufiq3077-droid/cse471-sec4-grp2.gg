@@ -34,6 +34,14 @@ app.use(async (req, res, next) => {
   }
 });
 
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'Khet-i backend API is live and running' });
+});
+
+app.get('/api', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'Khet-i API endpoints available' });
+});
+
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Khet-i server is running' });
 });
