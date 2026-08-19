@@ -15,6 +15,8 @@ const orderRoutes = require('./routes/orderRoutes');
 const riderRoutes = require('./routes/riderRoutes');
 const weatherRoutes = require('./routes/weatherRoutes');
 const farmerSummaryRoutes = require('./routes/farmerSummaryRoutes');
+const cropJournalRoutes = require('./routes/cropJournalRoutes');
+const farmResourceRoutes = require('./routes/farmResourceRoutes');
 
 const app = express();
 
@@ -47,6 +49,8 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/riders', riderRoutes);
 app.use('/api/weather', weatherRoutes);
 app.use('/api/farmer-summary', farmerSummaryRoutes);
+app.use('/api/crop-journal', cropJournalRoutes);
+app.use('/api/farm-resources', farmResourceRoutes);
 
 app.use((err, req, res, next) => {
   console.error('Server error:', err.message);

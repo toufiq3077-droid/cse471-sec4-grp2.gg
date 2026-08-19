@@ -24,6 +24,8 @@ import OrderInvoicePage from '../pages/marketplace/OrderInvoicePage';
 import OrderHistoryPage from '../pages/marketplace/OrderHistoryPage';
 import WeatherDashboardPage from '../pages/weather/WeatherDashboardPage';
 import FarmerMarketplaceSummaryPage from '../pages/marketplace/FarmerMarketplaceSummaryPage';
+import CropJournalPage from '../pages/farmer/CropJournalPage';
+import FarmResourcesPage from '../pages/farmer/FarmResourcesPage';
 
 function RootRedirect() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -186,6 +188,22 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['farmer']}>
             <FarmerMarketplaceSummaryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/farmer/crop-journal"
+        element={
+          <ProtectedRoute allowedRoles={['farmer']}>
+            <CropJournalPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/farmer/farm-resources"
+        element={
+          <ProtectedRoute allowedRoles={['farmer']}>
+            <FarmResourcesPage />
           </ProtectedRoute>
         }
       />
