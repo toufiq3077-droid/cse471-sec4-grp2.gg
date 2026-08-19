@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Sprout, Stethoscope, History, User, ShoppingBag, Truck, BadgeCheck, ArrowRight, ShieldCheck, Store, Receipt, Package, CloudSun } from 'lucide-react';
+import { Sprout, Stethoscope, History, User, ShoppingBag, Truck, BadgeCheck, ArrowRight, ShieldCheck, Store, Receipt, Package, CloudSun, Wallet, MessageCircle, Calendar } from 'lucide-react';
 export default function UserDashboard() {
   const { user } = useAuth();
 
@@ -93,11 +93,59 @@ export default function UserDashboard() {
             color: 'bg-amber-50 text-amber-700 border-amber-200',
             btnBg: 'bg-amber-600 hover:bg-amber-700',
           },
+          {
+            title: 'My Earnings',
+            desc: 'View delivery earnings, weekly stats, and request payouts.',
+            href: '/rider/earnings',
+            icon: Wallet,
+            color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            btnBg: 'bg-emerald-600 hover:bg-emerald-700',
+          },
         ]
       : []),
   ];
 
   const actionCards = [
+    ...(user?.role === 'expert'
+      ? [
+          {
+            title: 'Chat with Farmers',
+            desc: 'View farmers who booked a consultation with you and chat securely once their payment is verified.',
+            href: '/expert/consultations',
+            icon: MessageCircle,
+            color: 'bg-purple-50 text-purple-700 border-purple-200',
+            btnBg: 'bg-purple-600 hover:bg-purple-700',
+          },
+          {
+            title: 'Consultation History',
+            desc: 'Review past and upcoming consultations, filter by status, and update or cancel bookings.',
+            href: '/consultations',
+            icon: History,
+            color: 'bg-purple-50 text-purple-700 border-purple-200',
+            btnBg: 'bg-purple-600 hover:bg-purple-700',
+          },
+        ]
+      : []),
+    ...(user?.role === 'farmer'
+      ? [
+          {
+            title: 'Chat with Experts',
+            desc: 'View experts you have booked and chat securely once your payment is verified.',
+            href: '/farmer/consultations',
+            icon: MessageCircle,
+            color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            btnBg: 'bg-emerald-600 hover:bg-emerald-700',
+          },
+          {
+            title: 'Consultation History',
+            desc: 'Review your past and upcoming expert consultations, filter by status, and manage bookings.',
+            href: '/consultations',
+            icon: History,
+            color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            btnBg: 'bg-emerald-600 hover:bg-emerald-700',
+          },
+        ]
+      : []),
     {
       title: 'AI Crop Disease Diagnosis',
       desc: 'Upload a leaf photo for instant AI diagnosis and disease treatment recommendations.',
@@ -145,6 +193,14 @@ export default function UserDashboard() {
       icon: CloudSun,
       color: 'bg-sky-50 text-sky-700 border-sky-200',
       btnBg: 'bg-sky-600 hover:bg-sky-700',
+    },
+    {
+      title: 'Crop Lifecycle & Harvest Planner',
+      desc: 'Automated growth stage timelines, milestone agronomy checklists, and 1-click marketplace listing upon harvest.',
+      href: '/planner',
+      icon: Calendar,
+      color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      btnBg: 'bg-emerald-600 hover:bg-emerald-700',
     },
   ];
 

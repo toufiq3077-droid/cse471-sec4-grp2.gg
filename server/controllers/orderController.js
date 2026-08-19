@@ -2,6 +2,7 @@ const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const Crop = require('../models/Crop');
 const User = require('../models/User');
+const { buildLiveTracking, initDeliveryTracking, isValidPoint } = require('../services/trackingService');
 
 const DELIVERY_FEE = 60;
 const PAYMENT_METHODS = ['mock_bkash', 'cash_on_delivery'];
@@ -22,7 +23,7 @@ function generateTransactionId() {
 exports.placeOrder = async (req, res) => {
   try {
     const buyerId = req.user?.id || req.user?._id;
-    const { paymentMethod, shippingAddress } = req.body;
+    const { paymentMethod, shippingAddress, deliveryPoint } = req.body;
 
     if (!PAYMENT_METHODS.includes(paymentMethod)) {
       return res.status(400).json({ success: false, message: 'Please choose a valid payment method' });
@@ -79,6 +80,13 @@ exports.placeOrder = async (req, res) => {
         district: address.district || '',
         postalCode: address.postalCode || '',
       },
+      deliveryPoint: isValidPoint(deliveryPoint)
+        ? {
+            lat: Number(deliveryPoint.lat),
+            lng: Number(deliveryPoint.lng),
+            label: deliveryPoint.label || '',
+          }
+        : {},
       items,
       itemCount: items.length,
       subtotal,
@@ -152,6 +160,46 @@ exports.getOrderById = async (req, res) => {
     }
 
     return res.json({ success: true, order });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// @desc    Get live delivery tracking for an order
+// @route   GET /api/orders/:id/tracking
+// @access  Private (buyer, rider, farmer, admin)
+exports.getOrderTracking = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    const currentUserId = String(req.user?.id || req.user?._id || '');
+    const isBuyer = String(order.buyerId) === currentUserId;
+    const isAdmin = String(req.user?.role || '').toLowerCase() === 'admin';
+    const isFarmer = order.items.some(
+      (item) => item.farmerId && String(item.farmerId) === currentUserId
+    );
+    const isRider = order.riderId && String(order.riderId) === currentUserId;
+
+    if (!isBuyer && !isAdmin && !isFarmer && !isRider) {
+      return res.status(403).json({ success: false, message: 'You are not allowed to view this order' });
+    }
+
+    // Lazily initialize tracking for shipped orders created before tracking existed
+    if (order.status === 'shipped' && !order.tracking?.demoStartedAt) {
+      try {
+        await initDeliveryTracking(order);
+      } catch (err) {
+        console.warn('[orderController] lazy tracking init failed:', err.message);
+      }
+    }
+
+    const tracking = buildLiveTracking(order);
+
+    return res.json({ success: true, data: tracking });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }

@@ -67,4 +67,23 @@ export const adminApi = {
       headers: { Authorization: `Bearer ${token}` },
     });
   },
+
+  getConsultationRevenue: async (token) => {
+    return safeFetch(`${BASE_URL}/consultations/admin/revenue`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+
+  getPendingCashPayments: async (token) => {
+    return safeFetch(`${BASE_URL}/consultations/admin/pending-payments`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+
+  approveCashPayment: async (consultationId, token) => {
+    return safeFetch(`${BASE_URL}/consultations/${consultationId}/approve-payment`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
 };

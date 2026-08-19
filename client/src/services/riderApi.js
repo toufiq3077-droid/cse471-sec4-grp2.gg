@@ -23,10 +23,18 @@ export const riderApi = {
       method: 'POST',
       headers: authHeaders(),
     }).then(handleResponse),
-  updateStatus: (id, status) =>
+  updateStatus: (id, status, riderLocation) =>
     fetch(`${API_BASE}/riders/orders/${id}/status`, {
       method: 'PATCH',
       headers: authHeaders(),
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ status, riderLocation }),
+    }).then(handleResponse),
+  getEarnings: () => fetch(`${API_BASE}/riders/earnings`, { headers: authHeaders() }).then(handleResponse),
+  getPayouts: () => fetch(`${API_BASE}/riders/payouts`, { headers: authHeaders() }).then(handleResponse),
+  requestPayout: (amount, note) =>
+    fetch(`${API_BASE}/riders/payouts`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ amount, note }),
     }).then(handleResponse),
 };

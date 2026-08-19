@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Sprout, User, LogOut, LogIn, UserPlus, Menu, X, ShieldAlert, Stethoscope, Truck, ShoppingBag, LayoutDashboard, Store, ShoppingCart, CloudSun } from 'lucide-react';
+import { Sprout, User, LogOut, LogIn, UserPlus, Menu, X, ShieldAlert, Stethoscope, Truck, ShoppingBag, LayoutDashboard, Store, ShoppingCart, CloudSun, Wallet, Calendar } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import NotificationBell from './NotificationBell';
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -110,6 +111,15 @@ export default function Navbar() {
                     >
                       Sales Summary
                     </Link>
+                    <Link
+                      to="/planner"
+                      className={`text-sm font-medium transition flex items-center gap-1.5 ${
+                        isActive('/planner') ? 'text-emerald-600 font-semibold' : 'text-gray-600 hover:text-emerald-600'
+                      }`}
+                    >
+                      <Calendar className="w-4 h-4" />
+                      Crop Planner
+                    </Link>
                   </>
                 )}
                 {user?.role === 'rider' && (
@@ -121,6 +131,17 @@ export default function Navbar() {
                   >
                     <Truck className="w-4 h-4" />
                     My Deliveries
+                  </Link>
+                )}
+                {user?.role === 'rider' && (
+                  <Link
+                    to="/rider/earnings"
+                    className={`text-sm font-medium transition flex items-center gap-1.5 ${
+                      isActive('/rider/earnings') ? 'text-emerald-600 font-semibold' : 'text-gray-600 hover:text-emerald-600'
+                    }`}
+                  >
+                    <Wallet className="w-4 h-4" />
+                    My Earnings
                   </Link>
                 )}
                 <Link
@@ -148,6 +169,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
+                <NotificationBell />
                 {user?.role === 'buyer' && (
                   <Link
                     to="/cart"
@@ -264,6 +286,14 @@ export default function Navbar() {
                   >
                     Sales Summary
                   </Link>
+                  <Link
+                    to="/planner"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50"
+                  >
+                    <Calendar className="w-4 h-4" />
+                    Crop Planner
+                  </Link>
                 </>
               )}
               {user?.role === 'rider' && (
@@ -274,6 +304,16 @@ export default function Navbar() {
                 >
                   <Truck className="w-4 h-4 text-amber-600" />
                   My Deliveries
+                </Link>
+              )}
+              {user?.role === 'rider' && (
+                <Link
+                  to="/rider/earnings"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50"
+                >
+                  <Wallet className="w-4 h-4 text-emerald-600" />
+                  My Earnings
                 </Link>
               )}
               {user?.role === 'buyer' && (

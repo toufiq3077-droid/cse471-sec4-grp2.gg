@@ -274,7 +274,7 @@ function CalendarBooking({ expert, onBack, onBooked }) {
               <button
                 onClick={handleBook}
                 disabled={!selectedSlot || booking}
-                className="mt-auto w-full py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+                className="mt-auto w-full py-3 bg-green-600 hover:bg-green-700 disabled:bg-green-600 disabled:opacity-50 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
               >
                 {booking ? (
                   <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Booking...</>

@@ -3,8 +3,8 @@ const BASE_URL = import.meta.env.VITE_API_URL
       ? import.meta.env.VITE_API_URL
       : `${import.meta.env.VITE_API_URL}/api`)
   : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      ? 'http://localhost:5000/api'
-      : 'https://server-nu-one-37.vercel.app/api');
+      ? 'http://localhost:9478/api'
+      : '/api');
 
 async function handleResponse(response) {
   const data = await response.json().catch(() => ({}));
@@ -21,7 +21,7 @@ async function safeFetch(url, options = {}) {
   } catch (error) {
     if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
       throw new Error(
-        'Unable to connect to the Khet-i server. Please ensure the backend server is running on http://localhost:5000.'
+        `Unable to connect to the Khet-i server. Please ensure the backend server is running on ${BASE_URL.replace('/api', '')}.`
       );
     }
     throw error;

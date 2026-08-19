@@ -15,6 +15,9 @@ const orderRoutes = require('./routes/orderRoutes');
 const riderRoutes = require('./routes/riderRoutes');
 const weatherRoutes = require('./routes/weatherRoutes');
 const farmerSummaryRoutes = require('./routes/farmerSummaryRoutes');
+const geocodeRoutes = require('./routes/geocodeRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const cropPlannerRoutes = require('./routes/cropPlannerRoutes');
 
 const app = express();
 
@@ -32,10 +35,19 @@ app.use(async (req, res, next) => {
   }
 });
 
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'Khet-i backend API is live and running' });
+});
+
+app.get('/api', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'Khet-i API endpoints available' });
+});
+
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Khet-i server is running' });
 });
 
+// Mount routes with /api prefix
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ai', aiRoutes);
@@ -47,6 +59,25 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/riders', riderRoutes);
 app.use('/api/weather', weatherRoutes);
 app.use('/api/farmer-summary', farmerSummaryRoutes);
+app.use('/api/farmer-summary', farmerSummaryRoutes);
+app.use('/api/geocode', geocodeRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/crop-plans', cropPlannerRoutes);
+
+// Also mount without /api prefix for direct serverless function routes
+app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes);
+app.use('/ai', aiRoutes);
+app.use('/experts', expertRoutes);
+app.use('/consultations', consultationRoutes);
+app.use('/crops', cropRoutes);
+app.use('/cart', cartRoutes);
+app.use('/orders', orderRoutes);
+app.use('/riders', riderRoutes);
+app.use('/weather', weatherRoutes);
+app.use('/geocode', geocodeRoutes);
+app.use('/notifications', notificationRoutes);
+app.use('/crop-plans', cropPlannerRoutes);
 
 app.use((err, req, res, next) => {
   console.error('Server error:', err.message);

@@ -3,6 +3,10 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ExpertBookingPage from '../pages/expert/ExpertBookingPage';
 import ExpertRegistrationPage from '../pages/expert/ExpertRegistrationPage';
+import ConsultationDetailPage from '../pages/expert/ConsultationDetailPage';
+import ExpertConsultationsPage from '../pages/expert/ExpertConsultationsPage';
+import FarmerConsultationsPage from '../pages/expert/FarmerConsultationsPage';
+import ConsultationHistoryPage from '../pages/expert/ConsultationHistoryPage';
 import DiseaseDiagnosis from '../features/ai/pages/DiseaseDiagnosis';
 import DiagnosisHistory from '../features/ai/pages/DiagnosisHistory';
 import LoginPage from '../pages/auth/LoginPage';
@@ -13,6 +17,9 @@ import AdminDashboard from '../pages/admin/AdminDashboard';
 import UserDashboard from '../pages/dashboard/UserDashboard';
 import ProtectedRoute from '../components/common/ProtectedRoute';
 import RiderDashboard from '../pages/rider/RiderDashboard';
+import RiderEarningsPage from '../pages/rider/RiderEarningsPage';
+import RiderTrackingPage from '../pages/tracking/RiderTrackingPage';
+import BuyerTrackingPage from '../pages/tracking/BuyerTrackingPage';
 import MarketplacePage from '../pages/marketplace/MarketplacePage';
 import ListingDetailPage from '../pages/marketplace/ListingDetailPage';
 import MyListingsPage from '../pages/marketplace/MyListingsPage';
@@ -24,6 +31,7 @@ import OrderInvoicePage from '../pages/marketplace/OrderInvoicePage';
 import OrderHistoryPage from '../pages/marketplace/OrderHistoryPage';
 import WeatherDashboardPage from '../pages/weather/WeatherDashboardPage';
 import FarmerMarketplaceSummaryPage from '../pages/marketplace/FarmerMarketplaceSummaryPage';
+import CropPlannerPage from '../pages/planner/CropPlannerPage';
 
 function RootRedirect() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -97,6 +105,30 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/rider/earnings"
+        element={
+          <ProtectedRoute allowedRoles={['rider']}>
+            <RiderEarningsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/rider/deliveries/:id"
+        element={
+          <ProtectedRoute allowedRoles={['rider']}>
+            <RiderTrackingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/orders/:id/tracking"
+        element={
+          <ProtectedRoute allowedRoles={['buyer', 'farmer', 'admin', 'rider']}>
+            <BuyerTrackingPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Ecosystem Modules */}
       <Route
@@ -112,6 +144,38 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <ExpertRegistrationPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/consultations"
+        element={
+          <ProtectedRoute allowedRoles={['farmer', 'expert']}>
+            <ConsultationHistoryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/consultations/:id"
+        element={
+          <ProtectedRoute allowedRoles={['farmer', 'expert', 'admin']}>
+            <ConsultationDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/expert/consultations"
+        element={
+          <ProtectedRoute allowedRoles={['expert']}>
+            <ExpertConsultationsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/farmer/consultations"
+        element={
+          <ProtectedRoute allowedRoles={['farmer']}>
+            <FarmerConsultationsPage />
           </ProtectedRoute>
         }
       />
@@ -136,6 +200,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <WeatherDashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/planner"
+        element={
+          <ProtectedRoute allowedRoles={['farmer', 'admin']}>
+            <CropPlannerPage />
           </ProtectedRoute>
         }
       />
