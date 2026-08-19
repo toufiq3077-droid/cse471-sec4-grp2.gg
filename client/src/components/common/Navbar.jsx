@@ -120,6 +120,22 @@ export default function Navbar() {
                       <Calendar className="w-4 h-4" />
                       Crop Planner
                     </Link>
+                    <Link
+                      to="/farmer/crop-journal"
+                      className={`text-sm font-medium transition ${
+                        isActive('/farmer/crop-journal') ? 'text-emerald-600 font-semibold' : 'text-gray-600 hover:text-emerald-600'
+                      }`}
+                    >
+                      Crop Journal
+                    </Link>
+                    <Link
+                      to="/farmer/farm-resources"
+                      className={`text-sm font-medium transition ${
+                        isActive('/farmer/farm-resources') ? 'text-emerald-600 font-semibold' : 'text-gray-600 hover:text-emerald-600'
+                      }`}
+                    >
+                      Farm Resources
+                    </Link>
                   </>
                 )}
                 {user?.role === 'rider' && (
@@ -293,6 +309,20 @@ export default function Navbar() {
                   >
                     <Calendar className="w-4 h-4" />
                     Crop Planner
+                  </Link>
+                  <Link
+                    to="/farmer/crop-journal"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50"
+                  >
+                    Crop Journal
+                  </Link>
+                  <Link
+                    to="/farmer/farm-resources"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50"
+                  >
+                    Farm Resources
                   </Link>
                 </>
               )}

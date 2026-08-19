@@ -18,6 +18,8 @@ const farmerSummaryRoutes = require('./routes/farmerSummaryRoutes');
 const geocodeRoutes = require('./routes/geocodeRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const cropPlannerRoutes = require('./routes/cropPlannerRoutes');
+const cropJournalRoutes = require('./routes/cropJournalRoutes');
+const farmResourceRoutes = require('./routes/farmResourceRoutes');
 
 const app = express();
 
@@ -59,10 +61,11 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/riders', riderRoutes);
 app.use('/api/weather', weatherRoutes);
 app.use('/api/farmer-summary', farmerSummaryRoutes);
-app.use('/api/farmer-summary', farmerSummaryRoutes);
 app.use('/api/geocode', geocodeRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/crop-plans', cropPlannerRoutes);
+app.use('/api/crop-journal', cropJournalRoutes);
+app.use('/api/farm-resources', farmResourceRoutes);
 
 // Also mount without /api prefix for direct serverless function routes
 app.use('/auth', authRoutes);
